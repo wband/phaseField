@@ -1,0 +1,5 @@
+Version 0.9:
+Released in September 2015 before the PRISMS Workshop. A large portion of the code was refactored so that much more of the source code is shared between applications. In the previous version, each application was nearly independent. This version should be used with care. It is slower than version 0.8 and yields slightly different solutions to the time evolution equations (e.g. Allen-Cahn or Cahn-Hilliard) than version 0.8. 
+
+Version 0.8:
+First public release of the code.
