@@ -15,11 +15,8 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
 	  double rad[1] = {userInputs.domain_size[0]/40.0};
 	  double dx=userInputs.domain_size[0]/((double) userInputs.subdivisions[0])/std::pow(2.0,userInputs.refine_factor);
 	  double dist;
+	  
 	  scalar_IC = 0;
-
-	  if (index==0){
-		  scalar_IC = 0.0;
-	  }
 
 	  for (unsigned int i=0; i<1; i++){
 		  dist = 0.0;

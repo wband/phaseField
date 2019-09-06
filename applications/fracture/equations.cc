@@ -5,15 +5,15 @@
 // =================================================================================
 void variableAttributeLoader::loadVariableAttributes(){
 
-	// Variable 2
+	// Variable 0
 	set_variable_name				(0,"n");
 	set_variable_type				(0,SCALAR);
 	set_variable_equation_type		(0,EXPLICIT_TIME_DEPENDENT);
 
-    set_dependencies_value_term_RHS(0, "n, grad(u)");
-    set_dependencies_gradient_term_RHS(0, "grad(n)");
+    set_dependencies_value_term_RHS(0, "n, dndt");
+    set_dependencies_gradient_term_RHS(0, "");
 	
-    // Variable 2
+    // Variable 1
 	set_variable_name				(1,"u");
 	set_variable_type				(1,VECTOR);
 	set_variable_equation_type		(1,TIME_INDEPENDENT);
@@ -23,6 +23,14 @@ void variableAttributeLoader::loadVariableAttributes(){
     set_dependencies_value_term_LHS(1, "");
     set_dependencies_gradient_term_LHS(1, "n, grad(change(u))");
 
+	// Variable 0
+	set_variable_name				(2,"dndt");
+	set_variable_type				(2,SCALAR);
+	set_variable_equation_type		(2,AUXILIARY);
+
+    set_dependencies_value_term_RHS(2, "n, grad(u)");
+    set_dependencies_gradient_term_RHS(2, "grad(n)");
+	
 }
 
 // =============================================================================================
@@ -41,48 +49,17 @@ void customPDE<dim,degree>::explicitEquationRHS(variableContainer<dim,degree,dea
 				 dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
 // The phase field and its derivatives
 scalarvalueType n = variable_list.get_scalar_value(0);
-scalargradType nx = variable_list.get_scalar_gradient(0);
+scalarvalueType dndt = variable_list.get_scalar_value(2);
 
-// The derivative of the displacement vector
-vectorgradType ux = variable_list.get_vector_gradient(1);
-
-// compute strain
-dealii::VectorizedArray<double> E[dim][dim], S[dim][dim];
-
- for (unsigned int i=0; i<dim; i++){
- for (unsigned int j=0; j<dim; j++){
-          E[i][j]= constV(0.5)*(ux[i][j]+ux[j][i]);
- }
- }
-
-
-// compute stress
-dealii::VectorizedArray<double> CIJ[CIJ_tensor_size][CIJ_tensor_size];
-
-if (n_dependent_stiffness == true){
-for (unsigned int i=0; i<2*dim-1+dim/3; i++){
-          for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-              CIJ[i][j] = CIJ_Mg[i][j];
-	  }
-}
-computeStress<dim>(CIJ, E, S);
+for (unsigned int j=0; j<dndt.n_array_elements; ++j){
+    if (dndt[j] > 0.0) dndt[j] = 0.0;
 }
 
-// compute elastic energy
-dealii::VectorizedArray<double> elastic_energy=constV(0.0);
-
-for (unsigned int i=0; i<dim; i++){
-          for (unsigned int j=0; j<dim; j++){
-                  elastic_energy += constV(0.5)*S[i][j]*E[i][j];
-          }
-}
-
+// 
 //scalarvalueType eq_n_test =(n-constV(userInputs.dtValue*MnV)*(constV(2.0)*(n-constV(1.0))*elastic_energy + n));
-scalarvalueType eq_n = (n-constV(userInputs.dtValue*MnV)*(constV(2.0)*(n-constV(1.0))*elastic_energy + n));
-scalargradType eqx_n = (constV(-userInputs.dtValue*MnV*ell2)*nx);
+scalarvalueType eq_n = (n-constV(userInputs.dtValue*MnV)*dndt);
 
 variable_list.set_scalar_value_term_RHS(0,eq_n);
-variable_list.set_scalar_gradient_term_RHS(0,eqx_n);
 }
 
 
@@ -106,19 +83,10 @@ void customPDE<dim,degree>::nonExplicitEquationRHS(variableContainer<dim,degree,
 
 //n
 scalarvalueType n = variable_list.get_scalar_value(0);
+scalargradType nx = variable_list.get_scalar_gradient(0);
 //u
 vectorgradType ux = variable_list.get_vector_gradient(1);
 
-// --- Setting the expressions for the terms in the governing equations ---
-dealii::VectorizedArray<double> CIJ[CIJ_tensor_size][CIJ_tensor_size];
-
-if (n_dependent_stiffness == true){
-for (unsigned int i=0; i<2*dim-1+dim/3; i++){
-          for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-                  CIJ[i][j] = CIJ_Mg[i][j]*(constV(1.0)-2.0*n+n*n)+constV(k_small);
-          }
-}
-}
 
 //compute strain tensor
 dealii::VectorizedArray<double> E[dim][dim], S[dim][dim];
@@ -128,6 +96,13 @@ dealii::VectorizedArray<double> E[dim][dim], S[dim][dim];
  }
  }
 
+// --- Setting the expressions for the terms in the governing equations ---
+dealii::VectorizedArray<double> CIJ[CIJ_tensor_size][CIJ_tensor_size];
+for (unsigned int i=0; i<2*dim-1+dim/3; i++){
+          for (unsigned int j=0; j<2*dim-1+dim/3; j++){
+                  CIJ[i][j] = CIJ_Mg[i][j]*(constV(1.0)-2.0*n+n*n)+constV(k_small);
+          }
+}
 
 //compute stress tensor
 computeStress<dim>(CIJ, E, S);
@@ -141,9 +116,31 @@ for (unsigned int i=0; i<dim; i++){
 	}
 }
 
-// --- Submitting the terms for the governing equations ---
+//compute the stress for the energy density for the crack evolution
+for (unsigned int i=0; i<2*dim-1+dim/3; i++){
+          for (unsigned int j=0; j<2*dim-1+dim/3; j++){
+              CIJ[i][j] = CIJ_Mg[i][j];
+	  }
+}
+computeStress<dim>(CIJ, E, S);
 
+// compute elastic energy
+dealii::VectorizedArray<double> elastic_energy=constV(0.0);
+
+for (unsigned int i=0; i<dim; i++){
+          for (unsigned int j=0; j<dim; j++){
+                  elastic_energy += constV(0.5)*S[i][j]*E[i][j];
+          }
+}
+
+scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + n);
+scalargradType eqx_n = (constV(ell2)*nx);
+
+// --- Submitting the terms for the governing equations ---
 variable_list.set_vector_gradient_term_RHS(1,eqx_u);
+
+variable_list.set_scalar_value_term_RHS(2,eq_n);
+variable_list.set_scalar_gradient_term_RHS(2,eqx_n);
 
 }
 

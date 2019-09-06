@@ -126,6 +126,7 @@ set Number of checkpoints = 0
 # set Boundary condition for variable n = NATURAL, NATURAL, DIRICHLET: 1.5, DIRICHLET: 1.5
 
 set Boundary condition for variable n = NATURAL
+set Boundary condition for variable dndt = NATURAL
 set Boundary condition for variable u, x component = NATURAL
 set Boundary condition for variable u, y component = NATURAL, NATURAL, DIRICHLET: -0.2, DIRICHLET: 0.2
 set Boundary condition for variable u, z component = NATURAL
