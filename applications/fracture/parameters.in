@@ -74,7 +74,7 @@ subsection Linear solver parameters: u
     set Tolerance value = 5e-4
 
     # The maximum number of linear solver iterations per solve
-    set Maximum linear solver iterations = 1000
+    set Maximum linear solver iterations = 2000
 end
 
 # =================================================================================
@@ -149,6 +149,6 @@ set Model constant ell2 = 2.0, double
 # n_dependent_stiffness
 set Model constant n_dependent_stiffness = true, bool
 
-set Model constant k_small = 1e-4, double
+set Model constant k_small = 1e-5, double
 
 set Model constant CIJ_Mg = (4000.0,0.3), isotropic elastic constants

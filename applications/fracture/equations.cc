@@ -5,7 +5,7 @@
 // =================================================================================
 void variableAttributeLoader::loadVariableAttributes(){
 
-	// Variable 0
+// Variable 0 - phase field
 	set_variable_name				(0,"n");
 	set_variable_type				(0,SCALAR);
 	set_variable_equation_type		(0,EXPLICIT_TIME_DEPENDENT);
@@ -13,7 +13,7 @@ void variableAttributeLoader::loadVariableAttributes(){
     set_dependencies_value_term_RHS(0, "n, dndt");
     set_dependencies_gradient_term_RHS(0, "");
 	
-    // Variable 1
+// Variable 1 - displacement field
 	set_variable_name				(1,"u");
 	set_variable_type				(1,VECTOR);
 	set_variable_equation_type		(1,TIME_INDEPENDENT);
@@ -23,7 +23,7 @@ void variableAttributeLoader::loadVariableAttributes(){
     set_dependencies_value_term_LHS(1, "");
     set_dependencies_gradient_term_LHS(1, "n, grad(change(u))");
 
-	// Variable 0
+// Variable 2 - phase field update
 	set_variable_name				(2,"dndt");
 	set_variable_type				(2,SCALAR);
 	set_variable_equation_type		(2,AUXILIARY);
@@ -47,16 +47,17 @@ void variableAttributeLoader::loadVariableAttributes(){
 template <int dim, int degree>
 void customPDE<dim,degree>::explicitEquationRHS(variableContainer<dim,degree,dealii::VectorizedArray<double> > & variable_list,
 				 dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
-// The phase field and its derivatives
+// The phase field and the variable containing its update
 scalarvalueType n = variable_list.get_scalar_value(0);
 scalarvalueType dndt = variable_list.get_scalar_value(2);
 
+
+// enforcing irreversibility: phase field must increase monotonically
 for (unsigned int j=0; j<dndt.n_array_elements; ++j){
     if (dndt[j] > 0.0) dndt[j] = 0.0;
 }
 
-// 
-//scalarvalueType eq_n_test =(n-constV(userInputs.dtValue*MnV)*(constV(2.0)*(n-constV(1.0))*elastic_energy + n));
+// update to phase field 
 scalarvalueType eq_n = (n-constV(userInputs.dtValue*MnV)*dndt);
 
 variable_list.set_scalar_value_term_RHS(0,eq_n);
@@ -96,35 +97,19 @@ dealii::VectorizedArray<double> E[dim][dim], S[dim][dim];
  }
  }
 
-// --- Setting the expressions for the terms in the governing equations ---
-dealii::VectorizedArray<double> CIJ[CIJ_tensor_size][CIJ_tensor_size];
-for (unsigned int i=0; i<2*dim-1+dim/3; i++){
-          for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-                  CIJ[i][j] = CIJ_Mg[i][j]*(constV(1.0)-2.0*n+n*n)+constV(k_small);
-          }
-}
-
 //compute stress tensor
-computeStress<dim>(CIJ, E, S);
+computeStress<dim>(CIJ_Mg, E, S);
 
 
-//compute the term in the equation
+//compute RHS for mechanics solver (multiply stress by interpolation function)
  vectorgradType eqx_u;
 for (unsigned int i=0; i<dim; i++){
 	for (unsigned int j=0; j<dim; j++){
-		eqx_u[i][j] = -S[i][j];
+		eqx_u[i][j] = -S[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
 	}
 }
 
-//compute the stress for the energy density for the crack evolution
-for (unsigned int i=0; i<2*dim-1+dim/3; i++){
-          for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-              CIJ[i][j] = CIJ_Mg[i][j];
-	  }
-}
-computeStress<dim>(CIJ, E, S);
-
-// compute elastic energy
+// compute elastic energy density (without interpolation function)
 dealii::VectorizedArray<double> elastic_energy=constV(0.0);
 
 for (unsigned int i=0; i<dim; i++){
@@ -133,12 +118,15 @@ for (unsigned int i=0; i<dim; i++){
           }
 }
 
+// phase field update: (interpolation f'n)*(elastic energy)+bulk energy
 scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + n);
+// phase field update: gradient term (Laplacian in strong form)
 scalargradType eqx_n = (constV(ell2)*nx);
 
 // --- Submitting the terms for the governing equations ---
+// mechanics
 variable_list.set_vector_gradient_term_RHS(1,eqx_u);
-
+// phase field
 variable_list.set_scalar_value_term_RHS(2,eq_n);
 variable_list.set_scalar_gradient_term_RHS(2,eqx_n);
 
@@ -163,9 +151,9 @@ void customPDE<dim,degree>::equationLHS(variableContainer<dim,degree,dealii::Vec
 		dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
 
 // --- Getting the values and derivatives of the model variables ---
-
+// phase field
 scalarvalueType n = variable_list.get_scalar_value(0);
-//u
+// displacement
 vectorgradType Dux = variable_list.get_change_in_vector_gradient(1);
 
 // --- Setting the expressions for the terms in the governing equations ---
@@ -179,7 +167,7 @@ dealii::Tensor<2, CIJ_tensor_size, dealii::VectorizedArray<double> > CIJ;
 if (n_dependent_stiffness == true){
 for (unsigned int i=0; i<2*dim-1+dim/3; i++){
           for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-                  CIJ[i][j] = CIJ_Mg[i][j]*(constV(1.0)-2.0*n+n*n)+constV(k_small);
+                  CIJ[i][j] = CIJ_Mg[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
           }
 }
 }
@@ -187,13 +175,13 @@ for (unsigned int i=0; i<2*dim-1+dim/3; i++){
 //compute strain tensor
 dealii::Tensor<2, dim, dealii::VectorizedArray<double> > E;
 
+// couldn't use symmetrize before because of type issues
 E = symmetrize(Dux);
 
 //compute stress tensor
 computeStress<dim>(CIJ, E, eqx_Du);
 
  // --- Submitting the terms for the governing equations ---
-
 variable_list.set_vector_gradient_term_LHS(1,eqx_Du);
 
 }
