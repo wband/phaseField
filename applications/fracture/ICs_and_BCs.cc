@@ -61,5 +61,11 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
 
 
       // -------------------------------------------------------------------------
+    if (index == 1){
+        if (direction == 3){
+            vector_BC[0]=0.0;
+            vector_BC[1]=0.4*time/(1000.0*userInputs.dtValue);
+        }
+    }
 
   }
