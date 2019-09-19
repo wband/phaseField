@@ -119,9 +119,9 @@ for (unsigned int i=0; i<dim; i++){
 }
 
 // phase field update: (interpolation f'n)*(elastic energy)+bulk energy
-scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + n);
+scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + gc_ell*n);
 // phase field update: gradient term (Laplacian in strong form)
-scalargradType eqx_n = (constV(ell2)*nx);
+scalargradType eqx_n = (constV(gc_ell*ell2)*nx);
 
 // --- Submitting the terms for the governing equations ---
 // mechanics

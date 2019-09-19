@@ -47,6 +47,7 @@ public:
 
 	double MnV = userInputs.get_model_constant_double("MnV");
 	double ell2 = userInputs.get_model_constant_double("ell2");
+	double gc_ell = userInputs.get_model_constant_double("gc_ell");
 	double k_small = userInputs.get_model_constant_double("k_small");
 	bool n_dependent_stiffness = userInputs.get_model_constant_bool("n_dependent_stiffness");
 

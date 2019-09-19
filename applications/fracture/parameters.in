@@ -143,8 +143,11 @@ set Boundary condition for variable u, z component = NATURAL
 # The Allen-Cahn mobilities
 set Model constant MnV = 1.0, double
 
-# The gradient energy coefficients
+# Interface width parameter
 set Model constant ell2 = 2.0, double
+
+# Interface energy parameter
+set Model constant gc_ell = 1.0, double
 
 # n_dependent_stiffness
 set Model constant n_dependent_stiffness = true, bool
