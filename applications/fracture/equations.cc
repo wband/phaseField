@@ -55,6 +55,8 @@ scalarvalueType dndt = variable_list.get_scalar_value(2);
 // enforcing irreversibility: phase field must increase monotonically
 for (unsigned int j=0; j<dndt.n_array_elements; ++j){
     if (dndt[j] > 0.0) dndt[j] = 0.0;
+// hacky bit to keep phi < 1
+    if (n[j] - dndt[j]*(userInputs.dtValue*MnV) > 1.0) dndt[j] = (n[j]-1.0)/(userInputs.dtValue*MnV);
 }
 
 // update to phase field 
