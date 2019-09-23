@@ -64,7 +64,10 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
     if (index == 1){
         if (direction == 3){
             vector_BC[0]=0.0;
-            vector_BC[1]=0.4*time/(1000.0*userInputs.dtValue);
+	 // working simple BC
+         //   vector_BC[1]=0.4*time/(1000.0*userInputs.dtValue);
+         // BC to isolate viscous effects
+	   vector_BC[1]=u_step*std::ceil((time - userInputs.dtValue)/step_t);
         }
     }
 

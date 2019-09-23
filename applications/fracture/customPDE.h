@@ -44,7 +44,8 @@ public:
 	// ================================================================
 	// Model constants specific to this subclass
 	// ================================================================
-
+        double u_step = userInputs.get_model_constant_double("u_step");
+        double step_t = userInputs.get_model_constant_double("step_t");
 	double MnV = userInputs.get_model_constant_double("MnV");
 	double ell2 = userInputs.get_model_constant_double("ell2");
 	double gc_ell = userInputs.get_model_constant_double("gc_ell");

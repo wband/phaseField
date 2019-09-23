@@ -34,6 +34,12 @@ void variableAttributeLoader::loadPostProcessorVariableAttributes(){
         set_dependencies_value_term_RHS(3, "n, grad(u)");
         set_dependencies_gradient_term_RHS(3, "");
         set_output_integral         	(3,true);
+	// Variable 4
+	set_variable_name				(4,"e22");
+	set_variable_type				(4,SCALAR);
+        set_dependencies_value_term_RHS(4, "grad(u)");
+        set_dependencies_gradient_term_RHS(4, "");
+        set_output_integral         	(4,true);
 }
 
 // =================================================================================
@@ -75,6 +81,7 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		  }
 		}
 
+		
 		dealii::VectorizedArray<double> CIJ_combined[CIJ_tensor_size][CIJ_tensor_size];
 
 		if (n_dependent_stiffness == true){
@@ -101,6 +108,7 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		scalarvalueType s11 = S[0][0];
 		scalarvalueType s12 = S[0][1];
 		scalarvalueType s22 = S[1][1];
+		scalarvalueType e22 = ux[1][1];
 
 // --- Submitting the terms for the postprocessing expressions ---
 
@@ -108,5 +116,6 @@ pp_variable_list.set_scalar_value_term_RHS(0, f_tot);
 pp_variable_list.set_scalar_value_term_RHS(1, s11);
 pp_variable_list.set_scalar_value_term_RHS(2, s12);
 pp_variable_list.set_scalar_value_term_RHS(3, s22);
+pp_variable_list.set_scalar_value_term_RHS(4, e22);
 
 }
