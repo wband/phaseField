@@ -44,6 +44,7 @@ public:
 	// ================================================================
 	// Model constants specific to this subclass
 	// ================================================================
+        double stepped_strain = userInputs.get_model_constant_bool("stepped_strain");
         double u_step = userInputs.get_model_constant_double("u_step");
         double step_t = userInputs.get_model_constant_double("step_t");
 	double MnV = userInputs.get_model_constant_double("MnV");

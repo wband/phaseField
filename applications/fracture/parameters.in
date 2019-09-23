@@ -140,6 +140,11 @@ set Boundary condition for variable u, z component = NATURAL
 # =================================================================================
 # Type options currently are double, int, bool, and tensor
 
+# stepped strain
+# if true, displacement of top boundary increases by u_step at intervals of step_t
+# if false, displacement at every time is equal to u_step*time/step_t
+set Model constant stepped_strain = false, bool
+
 # displacement per step increase
 set Model constant u_step = 0.01, double
 
