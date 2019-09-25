@@ -18,7 +18,7 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
 	  
 	  scalar_IC = 0;
 
-	  for (unsigned int i=0; i<1; i++){
+	  for (unsigned int i=0; i<0; i++){
 		  dist = 0.0;
 		  for (unsigned int dir = 0; dir < dim; dir++){
 			  dist += (p[dir]-center[i][dir]*userInputs.domain_size[dir])*(p[dir]-center[i][dir]*userInputs.domain_size[dir]);

@@ -55,7 +55,7 @@ scalarvalueType dndt = variable_list.get_scalar_value(2);
 // enforcing irreversibility: phase field must increase monotonically
 for (unsigned int j=0; j<dndt.n_array_elements; ++j){
     if (dndt[j] > 0.0) dndt[j] = 0.0;
-// hacky bit to keep phi < 1
+// phase field also cannot exceed 1
     if (n[j] - dndt[j]*(userInputs.dtValue*MnV) > 1.0) dndt[j] = (n[j]-1.0)/(userInputs.dtValue*MnV);
 }
 
@@ -107,7 +107,10 @@ computeStress<dim>(CIJ_Mg, E, S);
  vectorgradType eqx_u;
 for (unsigned int i=0; i<dim; i++){
 	for (unsigned int j=0; j<dim; j++){
-		eqx_u[i][j] = -S[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+		// most models
+		//eqx_u[i][j] = -S[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+		// Pham et al. example 3
+		eqx_u[i][j] = -S[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)+constV(k_small));
 	}
 }
 
@@ -121,9 +124,16 @@ for (unsigned int i=0; i<dim; i++){
 }
 
 // phase field update: (interpolation f'n)*(elastic energy)+bulk energy
-scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + gc_ell*n);
+// Pham et al. example 1
+//scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(gc_ell));
+// Pham et al. example 2 (most common model)
+// scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + 3.0*gc_ell*n);
+// Pham et al. example 3
+scalarvalueType eq_n = (-4.0*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*elastic_energy + constV(gc_ell)*(constV(2.0) - 2.0*n ));
+
+
 // phase field update: gradient term (Laplacian in strong form)
-scalargradType eqx_n = (constV(gc_ell*ell2)*nx);
+scalargradType eqx_n = (constV(ell2)*nx);
 
 // --- Submitting the terms for the governing equations ---
 // mechanics
@@ -169,7 +179,10 @@ dealii::Tensor<2, CIJ_tensor_size, dealii::VectorizedArray<double> > CIJ;
 if (n_dependent_stiffness == true){
 for (unsigned int i=0; i<2*dim-1+dim/3; i++){
           for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-                  CIJ[i][j] = CIJ_Mg[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+		  // most models
+                  // CIJ[i][j] = CIJ_Mg[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+		  // Pham et al. example 3
+		  CIJ[i][j] = CIJ_Mg[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)+constV(k_small));
           }
 }
 }

@@ -65,10 +65,15 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 
 
 		// Free energy expressions and interpolation functions
-                scalarvalueType f_tot = constV(0.5*gc_ell)*n*n;
+                // Pham et al. (2010) example 1
+                // scalarvalueType f_tot = gc_ell*n;
+                // Pham et al. (2010) example 2 (most common model)
+                // scalarvalueType f_tot = 1.5*gc_ell*n*n;
+                // Pham et al. (2010) example 3
+                scalarvalueType f_tot = gc_ell*(constV(1.0) - (constV(1.0)-n)*(constV(1.0)-n));
 
 		for (int i=0; i<dim; i++){
-		    f_tot += constV(0.5*gc_ell*ell2)*nx[i]*nx[i];
+		    f_tot += constV(0.5*ell2)*nx[i]*nx[i];
 		}
 
 		//compute strain and stress
@@ -87,8 +92,11 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		if (n_dependent_stiffness == true){
 		  for (unsigned int i=0; i<2*dim-1+dim/3; i++){
 			  for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-				  CIJ_combined[i][j] = CIJ_Mg[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
-			  }
+				// most models  
+				// CIJ_combined[i][j] = CIJ_Mg[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+			  	// Pham et al. example 3
+				CIJ_combined[i][j] = CIJ_Mg[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)+constV(k_small));
+			}
 		  }
 		  computeStress<dim>(CIJ_combined, E, S);
 		}

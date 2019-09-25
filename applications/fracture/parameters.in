@@ -7,20 +7,20 @@ set Number of dimensions = 2
 # Set the length of the domain in all three dimensions
 # =================================================================================
 # Each axes spans from zero to the specified length
-set Domain size X = 40.0
-set Domain size Y = 40.0
-set Domain size Z = 40.0
+set Domain size X = 20.0
+set Domain size Y = 20.0
+set Domain size Z = 20.0
 
 # =================================================================================
 # Set the element parameters
 # =================================================================================
 # The number of elements in each direction is 2^(refineFactor) * subdivisions
 # For optimal performance, use refineFactor primarily to determine the element size
-set Subdivisions X = 3
-set Subdivisions Y = 3
-set Subdivisions Z = 3
+set Subdivisions X = 1
+set Subdivisions Y = 1
+set Subdivisions Z = 1
 
-set Refine factor = 5
+set Refine factor = 6
 
 # Set the polynomial degree of the element (allowed values: 1, 2, or 3)
 set Element degree = 1
@@ -35,11 +35,11 @@ set Mesh adaptivity = true
 # When adaptive meshing is enabled, the refine factor set in the block above is
 # only used to generate the first pass of the mesh as the initial conditions are
 # applied. It should be set somewhere between the max and min levels below.
-set Max refinement level = 5
-set Min refinement level = 2
+set Max refinement level = 6
+set Min refinement level = 6
 
 # Set the number of time steps between remeshing operations
-set Steps between remeshing operations = 50
+set Steps between remeshing operations = 100
 
 # Set the criteria for adapting the mesh
 subsection Refinement criterion: n
@@ -59,7 +59,7 @@ set Time step = 5.0e-3
 
 # The simulation ends when either the number of time steps is reached or the
 # simulation time is reached.
-set Number of time steps = 12000
+set Number of time steps = 60000
 
 # =================================================================================
 # Set the linear solver parameters
@@ -71,10 +71,10 @@ subsection Linear solver parameters: u
     set Tolerance type = ABSOLUTE_RESIDUAL
 
     # The tolerance for convergence (L2 norm)
-    set Tolerance value = 5e-4
+    set Tolerance value = 1e-6
 
     # The maximum number of linear solver iterations per solve
-    set Maximum linear solver iterations = 2000
+    set Maximum linear solver iterations = 50000
 end
 
 # =================================================================================
@@ -83,13 +83,14 @@ end
 # Type of spacing between outputs ("EQUAL_SPACING", "LOG_SPACING", "N_PER_DECADE",
 # or "LIST")
 set Output condition =  EQUAL_SPACING
+set List of time steps to output = 0, 
 
 # Number of times the program outputs the fields (total number for "EQUAL_SPACING"
 # and "LOG_SPACING", number per decade for "N_PER_DECADE", ignored for "LIST")
-set Number of outputs = 60
+set Number of outputs = 150
 
 # The number of time steps between updates being printed to the screen
-set Skip print steps = 100 #1000
+set Skip print steps = 100
 
 # =================================================================================
 # Set the checkpoint/restart parameters
@@ -125,7 +126,8 @@ set Number of checkpoints = 0
 # 1.5 on the top and bottom for variable 'n' in 2D
 # set Boundary condition for variable n = NATURAL, NATURAL, DIRICHLET: 1.5, DIRICHLET: 1.5
 
-set Boundary condition for variable n = NATURAL
+set Boundary condition for variable n = NATURAL, NATURAL,  DIRICHLET: 0.0,  DIRICHLET: 0.0
+#set Boundary condition for variable n = NATURAL
 set Boundary condition for variable dndt = NATURAL
 set Boundary condition for variable u, x component = NATURAL
 set Boundary condition for variable u, y component = NATURAL, NATURAL, DIRICHLET: 0.0, NON_UNIFORM_DIRICHLET
@@ -143,19 +145,22 @@ set Boundary condition for variable u, z component = NATURAL
 # stepped strain
 # if true, displacement of top boundary increases by u_step at intervals of step_t
 # if false, displacement at every time is equal to u_step*time/step_t
-set Model constant stepped_strain = false, bool
+set Model constant stepped_strain = true, bool
 
 # displacement per step increase
-set Model constant u_step = 0.01, double
+set Model constant u_step = 0.001, double
+
+# displacement per step increase
+set Model constant u_init = 0.0, double
 
 # time between strain increases
 set Model constant step_t = 2.0, double
 
 # The Allen-Cahn mobilities
-set Model constant MnV = 4.0, double
+set Model constant MnV = 1.0, double
 
 # Interface width parameter
-set Model constant ell2 = 2.0, double
+set Model constant ell2 = 1.0, double
 
 # Interface energy parameter
 set Model constant gc_ell = 1.0, double
@@ -163,6 +168,6 @@ set Model constant gc_ell = 1.0, double
 # n_dependent_stiffness
 set Model constant n_dependent_stiffness = true, bool
 
-set Model constant k_small = 1e-5, double
+set Model constant k_small = 1e-4, double
 
-set Model constant CIJ_Mg = (4000.0,0.3), isotropic elastic constants
+set Model constant CIJ_Mg = (40000.0,0.0), isotropic elastic constants
