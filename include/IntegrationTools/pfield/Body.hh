@@ -42,12 +42,14 @@ namespace PRISMS
         {
             std::cout << "Begin reading vtk file" << std::endl;
 
-
+	    std::cout << "ch1" << std::endl;
             // read in vtk file here
-            std::ifstream infile_mesh(vtkfile.c_str());
+ //           std::ifstream infile_mesh(vtkfile.c_str());
+//	    std::cout << "ch2" << std::endl;
 
             // read mesh info
-            mesh.read_vtk(infile_mesh);
+          //  mesh.read_vtk(infile_mesh);
+	  //  std::cout << "ch3" << std::endl;
 
             std::ifstream infile(vtkfile.c_str());
 
@@ -56,6 +58,7 @@ namespace PRISMS
             std::string str, name, type, line;
             int numcomp;
             unsigned long int Npoints;
+	    std::cout << "ch4" << std::endl;
 
             while(!infile.eof())
             {
@@ -64,6 +67,7 @@ namespace PRISMS
 
                 if( line[0] == 'P')
                 {
+		    std::cout << line << std::endl;
                     if( line.size() > 9 && line.substr(0,10) == "POINT_DATA")
                     {
                         //std::cout << line << "\n";
@@ -75,6 +79,7 @@ namespace PRISMS
                 }
                 else if( line[0] == 'S')
                 {
+		    std::cout << line << std::endl;
                     if( line.size() > 6 && line.substr(0,7) == "SCALARS")
                     {
                         ss.clear();
@@ -124,6 +129,7 @@ namespace PRISMS
                 // Alternative field descriptor used by ParaView (holds the same information as the "SCALAR" line above)
                 else if( line[0] == 'F')
                 {
+		    std::cout << line << std::endl;
                     if( line.size() > 14 && line.substr(0,15) == "FIELD FieldData")
                     {
                         ss.clear();

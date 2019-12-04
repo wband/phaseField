@@ -176,7 +176,11 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
         }
 
     }
-
+    
+    
+    double* data;
+    
+    
     unsigned int op_list_index = 0;
     for (unsigned int var_index=0; var_index < userInputs.number_of_variables; var_index++){
 
@@ -190,12 +194,12 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
 
 
         if (!is_remapped_op || !userInputs.load_grain_structure){
-
+		// this is the default behavior
             if (userInputs.load_ICs[var_index] == false){
                 pcout << "Applying non-PField initial condition...\n";
 
                 if (userInputs.var_type[var_index] == SCALAR){
-                    VectorTools::interpolate (*dofHandlersSet[var_index], InitialCondition<dim,degree>(var_index,userInputs,this), *solutionSet[var_index]);
+                    VectorTools::interpolate (*dofHandlersSet[var_index], InitialCondition<dim,degree>(var_index,userInputs,this,data), *solutionSet[var_index]);
                 }
                 else {
                     VectorTools::interpolate (*dofHandlersSet[var_index], InitialConditionVector<dim,degree>(var_index,userInputs,this), *solutionSet[var_index]);

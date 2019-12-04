@@ -112,7 +112,7 @@ class MatrixFreePDE:public Subscriptor
   ConditionalOStream  pcout;
 
   // Initial conditions function
-  virtual void setInitialCondition(const dealii::Point<dim> &p, const unsigned int index, double & scalar_IC, dealii::Vector<double> & vector_IC) = 0;
+  virtual void setInitialCondition(const dealii::Point<dim> &p, const unsigned int index, double & scalar_IC, dealii::Vector<double> & vector_IC, double* data=NULL) = 0;
 
   // Non-uniform boundary conditions function
   virtual void setNonUniformDirichletBCs(const dealii::Point<dim> &p, const unsigned int index, const unsigned int direction, const double time, double & scalar_BC, dealii::Vector<double> & vector_BC) = 0;

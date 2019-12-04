@@ -18,7 +18,7 @@ public:
   const unsigned int index;
   const userInputParameters<dim> userInputs;
   dealii::Vector<double> values;
-  InitialCondition (const unsigned int _index, const userInputParameters<dim> _userInputs, MatrixFreePDE<dim,degree>* _matrix_free_pde) : dealii::Function<dim>(1), index(_index), userInputs(_userInputs),matrix_free_pde(_matrix_free_pde) {
+  InitialCondition (const unsigned int _index, const userInputParameters<dim> _userInputs, MatrixFreePDE<dim,degree>* _matrix_free_pde, double* data=NULL) : dealii::Function<dim>(1), index(_index), userInputs(_userInputs),matrix_free_pde(_matrix_free_pde) {
     std::srand(dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)+1);
   }
   // IC for scalar values
