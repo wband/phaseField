@@ -177,10 +177,18 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
 
     }
     
-    
-    double* data;
-    
-    
+    std::ifstream dataFile("/Users/andrews/code/phaseField/applications/fracture_input/data.dat", std::ios::in | std::ios::binary);
+    double dbuf;
+    char buf[8];
+    std::vector<double> data;
+    data.reserve(128*128);
+    for(int i=0;i<128*128;i++){
+        dataFile.read(buf, 8);
+        memcpy(&dbuf, &buf, sizeof data[0]);
+        data.push_back(dbuf);
+    }
+    dataFile.close();
+
     unsigned int op_list_index = 0;
     for (unsigned int var_index=0; var_index < userInputs.number_of_variables; var_index++){
 
@@ -199,7 +207,8 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
                 pcout << "Applying non-PField initial condition...\n";
 
                 if (userInputs.var_type[var_index] == SCALAR){
-                    VectorTools::interpolate (*dofHandlersSet[var_index], InitialCondition<dim,degree>(var_index,userInputs,this,data), *solutionSet[var_index]);
+		cout << data.size(); 
+                   VectorTools::interpolate (*dofHandlersSet[var_index], InitialCondition<dim,degree>(var_index,userInputs,this,data), *solutionSet[var_index]);
                 }
                 else {
                     VectorTools::interpolate (*dofHandlersSet[var_index], InitialConditionVector<dim,degree>(var_index,userInputs,this), *solutionSet[var_index]);
