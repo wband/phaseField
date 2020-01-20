@@ -42,7 +42,8 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
       if (index > 2){
          int i = (int)std::floor(p[0]*(128.0)/userInputs.domain_size[0]);
          int j = (int)std::floor(p[1]*(128.0)/userInputs.domain_size[1]);
-	scalar_IC = data[j*128+i];
+	scalar_IC = data[j*257+i];
+        if (index == 4) scalar_IC = 1.0;
       }
 
 	  // --------------------------------------------------------------------------

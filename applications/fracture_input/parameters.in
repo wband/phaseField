@@ -7,9 +7,9 @@ set Number of dimensions = 2
 # Set the length of the domain in all three dimensions
 # =================================================================================
 # Each axes spans from zero to the specified length
-set Domain size X = 20.0
-set Domain size Y = 20.0
-set Domain size Z = 20.0
+set Domain size X = 40.0
+set Domain size Y = 40.0
+set Domain size Z = 40.0
 
 # =================================================================================
 # Set the element parameters
@@ -20,7 +20,7 @@ set Subdivisions X = 1
 set Subdivisions Y = 1
 set Subdivisions Z = 1
 
-set Refine factor = 7
+set Refine factor = 8
 
 # Set the polynomial degree of the element (allowed values: 1, 2, or 3)
 set Element degree = 1
@@ -35,8 +35,8 @@ set Mesh adaptivity = true
 # When adaptive meshing is enabled, the refine factor set in the block above is
 # only used to generate the first pass of the mesh as the initial conditions are
 # applied. It should be set somewhere between the max and min levels below.
-set Max refinement level = 7
-set Min refinement level = 7
+set Max refinement level = 8
+set Min refinement level = 8
 
 # Set the number of time steps between remeshing operations
 set Steps between remeshing operations = 20
@@ -59,7 +59,7 @@ set Time step = 5.0e-3
 
 # The simulation ends when either the number of time steps is reached or the
 # simulation time is reached.
-set Number of time steps = 10000
+set Number of time steps = 4000
 
 # =================================================================================
 # Set the linear solver parameters
@@ -159,10 +159,10 @@ set Model constant stepped_strain = false, bool
 set Model constant u_step = 0.002, double
 
 # displacement per step increase
-set Model constant u_init = 0.04, double
+set Model constant u_init = 0.094, double
 
 # time between strain increases
-set Model constant step_t = 10.0, double
+set Model constant step_t = 1.0, double
 
 # The Allen-Cahn mobilities
 set Model constant MnV = 1.0, double

@@ -115,7 +115,7 @@ vectorgradType S;
 
 for (unsigned int i=0; i<2*dim-1+dim/3; i++){
           for (unsigned int j=0; j<2*dim-1+dim/3; j++){
-                   CIJ[i][j] = CIJ_Mg[i][j]*rand+constV(k_small);
+                   CIJ[i][j] = CIJ_Mg[i][j]*rand;
           }
 }
 E = symmetrize(ux);
@@ -128,11 +128,11 @@ computeStress<dim>(CIJ, E, S);
 for (unsigned int i=0; i<dim; i++){
 	for (unsigned int j=0; j<dim; j++){
 		// most models
-		//eqx_u[i][j] = -S[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+		eqx_u[i][j] = -S[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
 		// Pham et al. example 3
 		//eqx_u[i][j] = -S[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)+constV(k_small));
 		// KKL model (with phi=1-their phi)
-		eqx_u[i][j] = -S[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(1.0+3.0*n)+constV(k_small));
+		//eqx_u[i][j] = -S[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(1.0+3.0*n)+constV(k_small));
 		
 	}
 }
@@ -148,12 +148,15 @@ for (unsigned int i=0; i<dim; i++){
 
 // phase field update: (interpolation f'n)*(elastic energy)+bulk energy
 // Pham et al. example 1
-// scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(gc_ell))*rand2;
+ scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(gc_ell))*rand2;
 // Pham et al. example 2 (most common model)
 //scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + 2.0*gc_ell*n);
 // Pham et al. example 3
 // scalarvalueType eq_n = (-4.0*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*elastic_energy + constV(gc_ell)*(constV(1.0001) - 2.0*n ));
-   scalarvalueType eq_n = 12.0*n*(constV(1.0)-n)*(constV(1.0)-n)*(elastic_energy -constV(1.0));
+// KKS
+//   scalarvalueType eq_n = -12.0*n*(constV(1.0)-n)*(constV(1.0)-n)*(elastic_energy -rand2);
+// my attempt at a model
+// scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(1.5*gc_ell))*rand2*(constV(1.01) - 2.0*n);
 
 // phase field update: gradient term (Laplacian in strong form)
 scalargradType eqx_n = (constV(ell2)*nx*rand2);
@@ -209,7 +212,7 @@ for (unsigned int i=0; i<2*dim-1+dim/3; i++){
 		  // Pham et al. example 3
 		  // CIJ[i][j] = CIJ_Mg[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)+constV(k_small));
 		  // KKL
-		CIJ[i][j] = CIJ_Mg[i][j]*rand*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(1.0+3.0*n) +constV(k_small));
+		//CIJ[i][j] = CIJ_Mg[i][j]*rand*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(1.0+3.0*n) +constV(k_small));
           }
 }
 }

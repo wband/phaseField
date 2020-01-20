@@ -176,19 +176,19 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
         }
 
     }
-    
+ // bits to read in data   
     std::ifstream dataFile("/Users/andrews/code/phaseField/applications/fracture_input/data.dat", std::ios::in | std::ios::binary);
     double dbuf;
     char buf[8];
     std::vector<double> data;
-    data.reserve(128*128);
-    for(int i=0;i<128*128;i++){
+    data.reserve(257*257);
+    for(int i=0;i<257*257;i++){
         dataFile.read(buf, 8);
         memcpy(&dbuf, &buf, sizeof data[0]);
         data.push_back(dbuf);
     }
     dataFile.close();
-
+// end bits to read in data
     unsigned int op_list_index = 0;
     for (unsigned int var_index=0; var_index < userInputs.number_of_variables; var_index++){
 
