@@ -269,7 +269,7 @@ userInputParameters<dim>::userInputParameters(inputFileReader & input_file_reade
 
 
     // Use these inputs to create a list of time steps where the code should output, stored in the member
-    outputTimeStepList = setTimeStepList(output_condition, num_outputs,user_given_time_step_list);
+   outputTimeStepList = setTimeStepList(output_condition, num_outputs,user_given_time_step_list);
 
     // Variables for loading in PField ICs
     std::vector<std::string> load_ICs_temp = dealii::Utilities::split_string_list(parameter_handler.get("Load initial conditions"));
@@ -300,6 +300,19 @@ userInputParameters<dim>::userInputParameters(inputFileReader & input_file_reade
 
     load_file_name = dealii::Utilities::split_string_list(parameter_handler.get("File names"));
     load_field_name = dealii::Utilities::split_string_list(parameter_handler.get("Variable names in the files"));
+
+   // Parameters for reading ICs/data from binary file
+    bindata_flag = parameter_handler.get_bool("Data from binary file");
+    bindata_num = parameter_handler.get_integer("Number of fields in binary file");
+    	
+    bindata_size.push_back(parameter_handler.get_integer("nx of binary file"));
+    if (dim > 1){
+          bindata_size.push_back(parameter_handler.get_integer("ny of binary file"));
+          if (dim > 2){
+                  bindata_size.push_back(parameter_handler.get_integer("nz of binary file"));
+          }
+    }
+    
 
     // Parameters for checkpoint/restart
     resume_from_checkpoint = parameter_handler.get_bool("Load from a checkpoint");

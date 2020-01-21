@@ -326,8 +326,15 @@ void inputFileReader::declare_parameters(dealii::ParameterHandler & parameter_ha
     // Declare entries for reading initial conditions from file
     parameter_handler.declare_entry("Load initial conditions","void",dealii::Patterns::Anything(),"Whether to load the initial conditions for each variable from file.");
     parameter_handler.declare_entry("Load parallel file","void",dealii::Patterns::Anything(),"Whether all processors should read from a single file (versus each reading from separate files).");
-    parameter_handler.declare_entry("File names","void",dealii::Patterns::Anything(),"The file name to load from for each variable.");
     parameter_handler.declare_entry("Variable names in the files","void",dealii::Patterns::Anything(),"What each variable is named in the file being loaded.");
+    
+    // Declare entries for reading from binary file
+    parameter_handler.declare_entry("File names","void",dealii::Patterns::Anything(),"The file name to load from for each variable.");
+    parameter_handler.declare_entry("Data from binary file","false",dealii::Patterns::Bool(),"Whether to load data from a binary file.");
+    parameter_handler.declare_entry("Number of fields in binary file","1",dealii::Patterns::Integer(),"Number of fields in binary file");
+    parameter_handler.declare_entry("nx of binary file","1",dealii::Patterns::Integer(),"The number of data points in binary field in x direction.");
+    parameter_handler.declare_entry("ny of binary file","1",dealii::Patterns::Integer(),"The number of data points in binary field in y direction.");
+    parameter_handler.declare_entry("nz of binary file","1",dealii::Patterns::Integer(),"The number of data points in binary field in x direction.");
 
     // Checkpoint/restart
     parameter_handler.declare_entry("Load from a checkpoint","false",dealii::Patterns::Bool(),"Whether to load from a checkpoint created during a previous simulation.");

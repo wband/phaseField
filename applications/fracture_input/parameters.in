@@ -52,7 +52,6 @@ subsection Refinement criterion: n
 end
 
 # =================================================================================
-# Set the time step parameters
 # =================================================================================
 # The size of the time step
 set Time step = 5.0e-3
@@ -92,6 +91,13 @@ set Number of outputs = 100
 # The number of time steps between updates being printed to the screen
 set Skip print steps = 20
 
+# Reading from binary file
+set File names =  /Users/andrews/code/phaseField/applications/fracture_input/data.dat
+set Data from binary file = true
+set Number of fields in binary file = 1
+set nx of binary file = 257
+set ny of binary file = 257
+
 # =================================================================================
 # Set the checkpoint/restart parameters
 # =================================================================================
@@ -105,6 +111,7 @@ set Checkpoint condition = EQUAL_SPACING
 # Number of times the creates checkpoints (total number for "EQUAL_SPACING"
 # and "LOG_SPACING", number per decade for "N_PER_DECADE", ignored for "LIST")
 set Number of checkpoints = 0
+
 
 # =================================================================================
 # Set the boundary conditions
@@ -144,7 +151,6 @@ set Boundary condition for variable u, z component = NATURAL
 # Set the model constants
 # =================================================================================
 # Type options currently are double, int, bool, and tensor
-
 # Young's modulus distribution parameters
 # displacement per step increase
 set Model constant cracklength = 4.0, double

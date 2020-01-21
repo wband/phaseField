@@ -120,6 +120,11 @@ public:
 	bool resume_from_checkpoint;
 	std::vector<unsigned int> checkpointTimeStepList;
 
+	// Variables for loading from binary file
+	bool bindata_flag;
+	unsigned int bindata_num;
+	std::vector<unsigned int> bindata_size;
+
 	// Postprocessing parameters
 	unsigned int pp_number_of_variables;
 	unsigned int num_integrated_fields;

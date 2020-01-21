@@ -57,6 +57,7 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
         // Get the index of one of the scalar fields
         unsigned int scalar_field_index = 0;
         for (unsigned int var=0; var<userInputs.number_of_variables; var++){
+
             if (userInputs.var_type.at(var) == SCALAR){
                 scalar_field_index = var;
                 break;
@@ -176,19 +177,25 @@ void MatrixFreePDE<dim,degree>::applyInitialConditions(){
         }
 
     }
+
+    std::vector<double> data;
+    if(userInputs.bindata_flag){
  // bits to read in data   
-    std::ifstream dataFile("/Users/andrews/code/phaseField/applications/fracture_input/data.dat", std::ios::in | std::ios::binary);
+    std::ifstream dataFile(userInputs.load_file_name[0], std::ios::in | std::ios::binary);
     double dbuf;
     char buf[8];
-    std::vector<double> data;
-    data.reserve(257*257);
-    for(int i=0;i<257*257;i++){
+    unsigned long bindata_totsize = userInputs.bindata_size[0];
+    if (dim > 1) bindata_totsize = bindata_totsize*userInputs.bindata_size[1];
+    if (dim > 2) bindata_totsize = bindata_totsize*userInputs.bindata_size[2];
+    data.reserve(bindata_totsize);
+    for(unsigned long i=0;i<bindata_totsize;i++){
         dataFile.read(buf, 8);
         memcpy(&dbuf, &buf, sizeof data[0]);
         data.push_back(dbuf);
     }
     dataFile.close();
 // end bits to read in data
+   }
     unsigned int op_list_index = 0;
     for (unsigned int var_index=0; var_index < userInputs.number_of_variables; var_index++){
 
