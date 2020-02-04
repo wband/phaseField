@@ -11,42 +11,81 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
     // Use "if" statements to set the initial condition for each variable
     // according to its variable index
 
-	  double center[1][3] = {{0.5,0.5,0.5}};
-	  double rad[1] = {userInputs.domain_size[0]/40.0};
-	  double dx=userInputs.domain_size[0]/((double) userInputs.subdivisions[0])/std::pow(2.0,userInputs.refine_factor);
-	  double dist;
-	  
-	  scalar_IC = 0;
+      double center[1][3] = {{0.5,0.5,0.5}};
+      double rad[1] = {userInputs.domain_size[0]/40.0};
+      double dx=userInputs.domain_size[0]/((double) userInputs.subdivisions[0])/std::pow(2.0,userInputs.refine_factor);
+      double dist;
+      
+      scalar_IC = 0;
 
-	  //for (unsigned int i=0; i<1; i++){
-		//  dist = 0.0;
-		//  for (unsigned int dir = 0; dir < dim; dir++){
-		//	  dist += (p[dir]-center[i][dir]*userInputs.domain_size[dir])*(p[dir]-center[i][dir]*userInputs.domain_size[dir]);
-		//  }
-		//  dist = std::sqrt(dist);
+      //for (unsigned int i=0; i<1; i++){
+        //  dist = 0.0;
+        //  for (unsigned int dir = 0; dir < dim; dir++){
+        //    dist += (p[dir]-center[i][dir]*userInputs.domain_size[dir])*(p[dir]-center[i][dir]*userInputs.domain_size[dir]);
+        //  }
+        //  dist = std::sqrt(dist);
 
-      	if (index == 0){
-		if((std::abs(p[1]-userInputs.domain_size[1]/2.0) < cwidth*0.5)&&(p[0] < clength)) {
-			scalar_IC = 1.0;
-		}
-		
-	}
+        if (index == 0){
+        if((std::abs(p[1]-userInputs.domain_size[1]/2.0) < cwidth*0.5)&&(p[0] < clength)) {
+            scalar_IC = 1.0;
+        }
+        
+    }
 
-	//}
+    //}
 
       if (index ==1){
           for (unsigned int d=0; d<dim; d++){
               vector_IC(d) = 0.0;
           }
       }
-      if (index > 2){
-         int i = (int)std::floor(p[0]*(128.0)/userInputs.domain_size[0]);
-         int j = (int)std::floor(p[1]*(128.0)/userInputs.domain_size[1]);
-	scalar_IC = data[j*userInputs.bindata_size[0]+i];
-        if (index == 4) scalar_IC = 1.0;
-      }
 
-	  // --------------------------------------------------------------------------
+      // interpolation from regularly gridded input data
+      if (index > 2){
+          int r1[dim];
+          int r2[dim];
+          double dist[dim];
+          for (int j=0;j<dim;++j){
+          	  double dndx = (userInputs.bindata_size[j]-1.0)/userInputs.domain_size[j];
+        	  r1[j] = (int) std::floor(p[j]*dndx);
+        	  double rem = p[j] - r1[j]/dndx;
+        	  r2[j] = (int) std::min(r1[j]+1,userInputs.bindata_size[j]-1);
+        	  dist[j] = rem*dndx;
+          }
+          
+          if (dim == 2){
+             int ny = userInputs.bindata_size[1];
+             double xint1 = data[r1[0]*ny+r1[1]]*(1.0-dist[0])  +
+             			    data[r2[0]*ny+r1[1]]*dist[0]; 
+             double xint2 = data[r1[0]*ny+r2[1]]*(1.0-dist[0]) +
+             			    data[r2[0]*ny+r2[1]]*dist[0]; 
+             scalar_IC = xint1*(1.0-dist[1]) + xint2*dist[1];
+          
+    	 }
+   		 if (dim == 3){
+   		     int ny = userInputs.bindata_size[1];
+   		     int nz = userInputs.bindata_size[2];
+	  //   std::cout << nz << " " << nz*ny*nz << " " << r1[0]*ny*nz + r1[1]*ny + r1[2] << "\n";
+             double xint00 = data[r1[0]*ny*nz + r1[1]*ny + r1[2]]*(1.0-dist[0])  +
+             			     data[r2[0]*ny*nz + r1[1]*ny + r1[2]]*dist[0]; 
+	  //   std::cout << data[r1[0]*ny*nz + r1[1]*ny + r1[2]] << " " << data[r2[0]*ny*nz + r1[1]*ny + r1[2]] << " " << xint00 << "\n";
+             double xint01 = data[r1[0]*ny*nz + r1[1]*ny + r2[2]]*(1.0-dist[0]) +
+             			     data[r2[0]*ny*nz + r1[1]*ny + r2[2]]*dist[0] ; 
+             double xint10 = data[r1[0]*ny*nz + r2[1]*ny + r1[2]]*(1.0-dist[0]) +
+             			     data[r2[0]*ny*nz + r2[1]*ny + r1[2]]*dist[0] ; 
+             double xint11 = data[r1[0]*ny*nz + r2[1]*ny + r2[2]]*(1.0-dist[0]) +
+             			     data[r2[0]*ny*nz + r2[1]*ny + r2[2]]*dist[0] ;
+             double yint0 = xint00*(1.0-dist[1]) + xint10*dist[1];
+             double yint1 = xint01*(1.0-dist[1]) + xint11*dist[1];
+             scalar_IC = yint0*(1.0-dist[2]) + yint1*dist[2];
+	//     std::cout << r1[0] << " " << r1[1] << " " << r1[2] << " " << r2[0] << " " << r2[1] << " " << r2[2] << " "
+	//	 << xint00 << " " << xint01 << " " << xint10 << " " << xint11 << " " << yint0 << " " << yint1 << " " << scalar_IC << "\n"; 		 
+    	}
+    }
+
+        if (index == 4) scalar_IC = 1.0;
+
+      // --------------------------------------------------------------------------
   }
 
   // ===========================================================================
@@ -73,13 +112,13 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
     if (index == 1){
         if (direction == 3){
             vector_BC[0]=0.0;
-	    if(stepped_strain == false){
-	 // working simple BC
+        if(stepped_strain == false){
+     // working simple BC
                 vector_BC[1]=u_init+u_step*time/step_t;
-	    }else{
+        }else{
          // BC to isolate viscous effects
-	        vector_BC[1]=u_init+u_step*std::ceil((time - userInputs.dtValue)/step_t);
-	    }
+            vector_BC[1]=u_init+u_step*std::ceil((time - userInputs.dtValue)/step_t);
+        }
         }
     }
 
