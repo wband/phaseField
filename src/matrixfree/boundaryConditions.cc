@@ -220,7 +220,8 @@ void MatrixFreePDE<dim,degree>::getComponentsWithRigidBodyModes( std::vector<int
 				bool rigidBodyMode = true;
 				for (unsigned int direction = 0; direction < 2*dim; direction++){
 
-					if (userInputs.BC_list[starting_BC_list_index+component].var_BC_type[direction] == DIRICHLET){
+					if ( (userInputs.BC_list[starting_BC_list_index+component].var_BC_type[direction] == DIRICHLET)||
+					     (userInputs.BC_list[starting_BC_list_index+component].var_BC_type[direction] == NON_UNIFORM_DIRICHLET)){
 						rigidBodyMode = false;
 					}
 

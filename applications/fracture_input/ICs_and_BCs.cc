@@ -83,6 +83,7 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
     	}
     }
 
+        if (index == 3) scalar_IC = 1.0;
         if (index == 4) scalar_IC = 1.0;
 
       // --------------------------------------------------------------------------
@@ -110,7 +111,7 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
 
       // -------------------------------------------------------------------------
     if (index == 1){
-        if (direction == 3){
+/*        if (direction == 3){
             vector_BC[0]=0.0;
         if(stepped_strain == false){
      // working simple BC
@@ -120,6 +121,22 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
             vector_BC[1]=u_init+u_step*std::ceil((time - userInputs.dtValue)/step_t);
         }
         }
+*/
+	// surfing BCs inspired by Brach et al. 2019
+	double x = (p[0]-time*u_step)-clength;
+	double y = p[1] - userInputs.domain_size[1]/2.0;
+	double theta = std::atan2(y,x);
+	double r = std::sqrt(x*x+y*y);
+	double pi = 3.14159265359;
+	double Kic = 287.90;
+	// isotropy only
+	double mu = CIJ_Mg[dim][dim];
+	double lambda = CIJ_Mg[0][0] - 2.0*mu;
+	double nu = lambda/2.0/(lambda+mu);
+	double kappa = 3.0-4.0*nu;
+    	vector_BC[0] = (0.5*Kic/mu)*std::sqrt(0.5*r/pi)*std::cos(0.5*theta)*(kappa - std::cos(theta));
+    	vector_BC[1] = (0.5*Kic/mu)*std::sqrt(0.5*r/pi)*std::sin(0.5*theta)*(kappa - std::cos(theta));
     }
+
 
   }

@@ -12,32 +12,32 @@ void variableAttributeLoader::loadPostProcessorVariableAttributes(){
 	// Variable 0
 	set_variable_name				(0,"f_tot");
 	set_variable_type				(0,SCALAR);
-        set_dependencies_value_term_RHS(0, "n, grad(n), grad(u)");
+        set_dependencies_value_term_RHS(0, "n, grad(n), grad(u), rand");
         set_dependencies_gradient_term_RHS(0, "");
         set_output_integral         	(0,true);
 
 	// Variable 1
 	set_variable_name				(1,"s11");
 	set_variable_type				(1,SCALAR);
-        set_dependencies_value_term_RHS(1, "n, grad(u)");
+        set_dependencies_value_term_RHS(1, "n, grad(u), rand");
         set_dependencies_gradient_term_RHS(1, "");
         set_output_integral         	(1,true);
 	// Variable 2
 	set_variable_name				(2,"s12");
 	set_variable_type				(2,SCALAR);
-        set_dependencies_value_term_RHS(2, "n, grad(u)");
+        set_dependencies_value_term_RHS(2, "n, grad(u), rand");
         set_dependencies_gradient_term_RHS(2, "");
         set_output_integral         	(2,true);
 	// Variable 3
 	set_variable_name				(3,"s22");
 	set_variable_type				(3,SCALAR);
-        set_dependencies_value_term_RHS(3, "n, grad(u)");
+        set_dependencies_value_term_RHS(3, "n, grad(u), rand");
         set_dependencies_gradient_term_RHS(3, "");
         set_output_integral         	(3,true);
 	// Variable 4
 	set_variable_name				(4,"e22");
 	set_variable_type				(4,SCALAR);
-        set_dependencies_value_term_RHS(4, "grad(u)");
+        set_dependencies_value_term_RHS(4, "grad(u), rand");
         set_dependencies_gradient_term_RHS(4, "");
         set_output_integral         	(4,true);
 }
@@ -55,6 +55,7 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 
 		// The order parameter and its derivatives
 		scalarvalueType n = variable_list.get_scalar_value(0);
+		scalarvalueType rand = variable_list.get_scalar_value(3);
 		scalargradType nx = variable_list.get_scalar_gradient(0);
 
 		// The derivative of the displacement vector
@@ -93,7 +94,7 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		  for (unsigned int i=0; i<2*dim-1+dim/3; i++){
 			  for (unsigned int j=0; j<2*dim-1+dim/3; j++){
 				// most models  
-				CIJ_combined[i][j] = CIJ_Mg[i][j]*((constV(1.0)-2.0*n+n*n)+constV(k_small));
+				CIJ_combined[i][j] = CIJ_Mg[i][j]*rand*((constV(1.0)-2.0*n+n*n)+constV(k_small));
 			  	// Pham et al. example 3
 				// CIJ_combined[i][j] = CIJ_Mg[i][j]*((constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)*(constV(1.0)-n)+constV(k_small));
 			}
