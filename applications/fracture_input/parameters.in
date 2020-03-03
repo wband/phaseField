@@ -54,11 +54,11 @@ end
 # =================================================================================
 # =================================================================================
 # The size of the time step
-set Time step = 5.0e-3
+set Time step = 1.0e-2
 
 # The simulation ends when either the number of time steps is reached or the
 # simulation time is reached.
-set Number of time steps = 4000
+set Number of time steps = 15000
 
 # =================================================================================
 # Set the linear solver parameters
@@ -70,7 +70,7 @@ subsection Linear solver parameters: u
     set Tolerance type = ABSOLUTE_RESIDUAL
 
     # The tolerance for convergence (L2 norm)
-    set Tolerance value = 1e-6
+    set Tolerance value = 1e-7
 
     # The maximum number of linear solver iterations per solve
     set Maximum linear solver iterations = 10000
@@ -86,13 +86,13 @@ set List of time steps to output = 0,
 
 # Number of times the program outputs the fields (total number for "EQUAL_SPACING"
 # and "LOG_SPACING", number per decade for "N_PER_DECADE", ignored for "LIST")
-set Number of outputs = 100
+set Number of outputs = 75
 
 # The number of time steps between updates being printed to the screen
 set Skip print steps = 20
 
 # Reading from binary file
-set File names =  /Users/andrews/code/phaseField/applications/fracture_input/data.dat
+set File names = /work/ws/nemo/fr_wa1005-dealii_2019-0/phaseField/applications/fracture_input/test_BCs/het3/data_sigma0.274563_mu0.999794.dat
 set Data from binary file = true
 set Number of fields in binary file = 1
 set nx of binary file = 257
@@ -138,8 +138,8 @@ set Boundary condition for variable n = NATURAL
 set Boundary condition for variable rand = NATURAL
 set Boundary condition for variable rand2 = NATURAL
 set Boundary condition for variable dndt = NATURAL
-set Boundary condition for variable u, x component = NATURAL
-set Boundary condition for variable u, y component = NATURAL, NATURAL, DIRICHLET: 0.0, NON_UNIFORM_DIRICHLET
+set Boundary condition for variable u, x component = NON_UNIFORM_DIRICHLET, NON_UNIFORM_DIRICHLET, NON_UNIFORM_DIRICHLET, NON_UNIFORM_DIRICHLET
+set Boundary condition for variable u, y component = NON_UNIFORM_DIRICHLET, NON_UNIFORM_DIRICHLET, NON_UNIFORM_DIRICHLET, NON_UNIFORM_DIRICHLET
 #set Boundary condition for variable u, y component = NATURAL, NATURAL, DIRICHLET: 0.0, DIRICHLET: 0.04
 set Boundary condition for variable u, z component = NATURAL
 
@@ -152,23 +152,18 @@ set Boundary condition for variable u, z component = NATURAL
 # =================================================================================
 # Type options currently are double, int, bool, and tensor
 # Young's modulus distribution parameters
-# displacement per step increase
-set Model constant cracklength = 4.0, double
-set Model constant crackwidth = 0.2, double
 
-# stepped strain
-# if true, displacement of top boundary increases by u_step at intervals of step_t
-# if false, displacement at every time is equal to u_step*time/step_t
-set Model constant stepped_strain = false, bool
+# ideal crack velocity
+set Model constant vel = 0.2, double
 
-# displacement per step increase
-set Model constant u_step = 0.002, double
+# input stress intensity factor KI
+set Model constant KI = 306.0, double
 
-# displacement per step increase
-set Model constant u_init = 0.094, double
+# composite shear modulus
+set Model constant mubar = 1.48e4, double
 
-# time between strain increases
-set Model constant step_t = 1.0, double
+# constant kappa=4-3nu
+set Model constant kappa = 3.106, double
 
 # The Allen-Cahn mobilities
 set Model constant MnV = 1.0, double

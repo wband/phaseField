@@ -25,14 +25,18 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
         //  }
         //  dist = std::sqrt(dist);
 
+   //     if (index == 0){
+    //    if((std::abs(p[1]-userInputs.domain_size[1]/2.0) < cwidth*0.5)&&(p[0] < clength)) {
+    //        scalar_IC = 1.0;
+    //    }
         if (index == 0){
-        if((std::abs(p[1]-userInputs.domain_size[1]/2.0) < cwidth*0.5)&&(p[0] < clength)) {
-            scalar_IC = 1.0;
+		double y = p[1]-userInputs.domain_size[1]/2.0;
+		double dist = std::sqrt(p[0]*p[0]+y*y);
+		if (dist < std::sqrt(2.0*ell2)){ 
+			scalar_IC = (1.0 - dist/std::sqrt(2.0*ell2))*(1.0 - dist/std::sqrt(2.0*ell2));
+		}
         }
         
-    }
-
-    //}
 
       if (index ==1){
           for (unsigned int d=0; d<dim; d++){
@@ -83,7 +87,7 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
     	}
     }
 
-        if (index == 3) scalar_IC = 1.0;
+     //   if (index == 3) scalar_IC = 1.0;
         if (index == 4) scalar_IC = 1.0;
 
       // --------------------------------------------------------------------------
@@ -123,19 +127,17 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
         }
 */
 	// surfing BCs inspired by Brach et al. 2019
-	double x = (p[0]-time*u_step)-clength;
+	double x = (p[0]-time*vel);
 	double y = p[1] - userInputs.domain_size[1]/2.0;
 	double theta = std::atan2(y,x);
 	double r = std::sqrt(x*x+y*y);
 	double pi = 3.14159265359;
-	double Kic = 287.90;
 	// isotropy only
-	double mu = CIJ_Mg[dim][dim];
-	double lambda = CIJ_Mg[0][0] - 2.0*mu;
-	double nu = lambda/2.0/(lambda+mu);
-	double kappa = 3.0-4.0*nu;
-    	vector_BC[0] = (0.5*Kic/mu)*std::sqrt(0.5*r/pi)*std::cos(0.5*theta)*(kappa - std::cos(theta));
-    	vector_BC[1] = (0.5*Kic/mu)*std::sqrt(0.5*r/pi)*std::sin(0.5*theta)*(kappa - std::cos(theta));
+	//double mu = CIJ_Mg[dim][dim];
+	//double lambda = CIJ_Mg[0][0] - 2.0*mu;
+	//double nu = lambda/2.0/(lambda+mu);
+    	vector_BC[0] = 0.5*(KI/mubar)*std::sqrt(0.5*r/pi)*std::cos(0.5*theta)*(kappa - std::cos(theta));
+    	vector_BC[1] = 0.5*(KI/mubar)*std::sqrt(0.5*r/pi)*std::sin(0.5*theta)*(kappa - std::cos(theta));
     }
 
 
