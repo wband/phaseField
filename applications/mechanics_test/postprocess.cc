@@ -40,13 +40,23 @@ void variableAttributeLoader::loadPostProcessorVariableAttributes(){
         set_dependencies_value_term_RHS(4, "grad(u), rand");
         set_dependencies_gradient_term_RHS(4, "");
         set_output_integral         	(4,true);
+	set_variable_name				(5,"e12");
+	set_variable_type				(5,SCALAR);
+        set_dependencies_value_term_RHS(5, "grad(u), rand");
+        set_dependencies_gradient_term_RHS(5, "");
+        set_output_integral         	(5,true);
+	set_variable_name				(6,"e11");
+	set_variable_type				(6,SCALAR);
+        set_dependencies_value_term_RHS(6, "grad(u), rand");
+        set_dependencies_gradient_term_RHS(6, "");
+        set_output_integral         	(6,true);
 	// Variable 0
-	set_variable_name				(0,"f_int");
+/*	set_variable_name				(0,"f_int");
 	set_variable_type				(0,SCALAR);
         set_dependencies_value_term_RHS(0, "n, grad(n), grad(u), rand");
         set_dependencies_gradient_term_RHS(0, "");
         set_output_integral         	(5,true);
-
+*/
 }
 
 // =================================================================================
@@ -62,7 +72,7 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 
 		// The order parameter and its derivatives
 		scalarvalueType n = variable_list.get_scalar_value(0);
-		scalarvalueType rand = variable_list.get_scalar_value(3);
+		scalarvalueType rand = variable_list.get_scalar_value(2);
 		scalargradType nx = variable_list.get_scalar_gradient(0);
 
 		// The derivative of the displacement vector
@@ -85,11 +95,12 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		}
 
 		//compute strain and stress
+		dealii::Tensor<2, dim, dealii::VectorizedArray<double> > sfts;
 		dealii::VectorizedArray<double> E[dim][dim], S[dim][dim];
-
+		sfts[1][1] = 0.01;
 		for (unsigned int i=0; i<dim; i++){
 		  for (unsigned int j=0; j<dim; j++){
-			  E[i][j]= constV(0.5)*(ux[i][j]+ux[j][i]);
+			  E[i][j]= constV(0.5)*(ux[i][j]+ux[j][i])+sfts[i][j];
 
 		  }
 		}
@@ -124,7 +135,9 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		scalarvalueType s11 = S[0][0];
 		scalarvalueType s12 = S[0][1];
 		scalarvalueType s22 = S[1][1];
-		scalarvalueType e22 = ux[1][1];
+		scalarvalueType e22 = E[1][1];
+		scalarvalueType e12 = E[0][1];
+		scalarvalueType e11 = E[0][0];
 
 // --- Submitting the terms for the postprocessing expressions ---
 
@@ -133,5 +146,7 @@ pp_variable_list.set_scalar_value_term_RHS(1, s11);
 pp_variable_list.set_scalar_value_term_RHS(2, s12);
 pp_variable_list.set_scalar_value_term_RHS(3, s22);
 pp_variable_list.set_scalar_value_term_RHS(4, e22);
+pp_variable_list.set_scalar_value_term_RHS(5, e12);
+pp_variable_list.set_scalar_value_term_RHS(6, e11);
 
 }
