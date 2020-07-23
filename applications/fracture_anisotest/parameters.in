@@ -1,15 +1,15 @@
 # =================================================================================
 # Set the number of dimensions (1, 2, or 3 for a 1D, 2D, or 3D calculation)
 # =================================================================================
-set Number of dimensions = 3
+set Number of dimensions = 2
 
 # =================================================================================
 # Set the length of the domain in all three dimensions
 # =================================================================================
 # Each axes spans from zero to the specified length
-set Domain size X = 10.0
-set Domain size Y = 10.0
-set Domain size Z = 10.0
+set Domain size X = 20.0
+set Domain size Y = 20.0
+set Domain size Z = 20.0
 
 # =================================================================================
 # Set the element parameters
@@ -20,7 +20,7 @@ set Subdivisions X = 1
 set Subdivisions Y = 1
 set Subdivisions Z = 1
 
-set Refine factor = 5
+set Refine factor = 8
 
 # Set the polynomial degree of the element (allowed values: 1, 2, or 3)
 set Element degree = 1
@@ -29,14 +29,14 @@ set Element degree = 1
 # Set the adaptive mesh refinement parameters
 # =================================================================================
 # Set the flag determining if adaptive meshing is activated
-set Mesh adaptivity = false
+set Mesh adaptivity = true
 
 # Set the maximum and minimum level of refinement
 # When adaptive meshing is enabled, the refine factor set in the block above is
 # only used to generate the first pass of the mesh as the initial conditions are
 # applied. It should be set somewhere between the max and min levels below.
-set Max refinement level = 6
-set Min refinement level = 6
+set Max refinement level = 8
+set Min refinement level = 8
 
 # Set the number of time steps between remeshing operations
 set Steps between remeshing operations = 20
@@ -54,11 +54,11 @@ end
 # =================================================================================
 # =================================================================================
 # The size of the time step
-set Time step = 1.0e-2
+set Time step = 2.0e-3
 
 # The simulation ends when either the number of time steps is reached or the
 # simulation time is reached.
-set Number of time steps = 2
+set Number of time steps = 3000
 
 # =================================================================================
 # Set the linear solver parameters
@@ -70,7 +70,7 @@ subsection Linear solver parameters: u
     set Tolerance type = ABSOLUTE_RESIDUAL
 
     # The tolerance for convergence (L2 norm)
-    set Tolerance value = 1e-5
+    set Tolerance value = 1e-8
 
     # The maximum number of linear solver iterations per solve
     set Maximum linear solver iterations = 10000
@@ -86,10 +86,10 @@ set List of time steps to output = 0,
 
 # Number of times the program outputs the fields (total number for "EQUAL_SPACING"
 # and "LOG_SPACING", number per decade for "N_PER_DECADE", ignored for "LIST")
-set Number of outputs = 1
+set Number of outputs = 60
 
 # The number of time steps between updates being printed to the screen
-set Skip print steps = 1
+set Skip print steps = 20
 
 # Reading from binary file
 set File names = /work/ws/nemo/fr_wa1005-dealii_2019-0/phaseField/applications/fracture_input/test_BCs/het3/data_sigma0.274563_mu0.999794.dat
@@ -136,10 +136,12 @@ set Number of checkpoints = 0
 #set Boundary condition for variable n = NATURAL, NATURAL,  DIRICHLET: 0.0,  DIRICHLET: 0.0
 set Boundary condition for variable n = NATURAL
 set Boundary condition for variable rand = NATURAL
-set Boundary condition for variable u, x component = PERIODIC
-set Boundary condition for variable u, y component = PERIODIC
+set Boundary condition for variable rand2 = NATURAL
+set Boundary condition for variable dndt = NATURAL
+set Boundary condition for variable u, x component = NON_UNIFORM_DIRICHLET
+set Boundary condition for variable u, y component = NON_UNIFORM_DIRICHLET
 #set Boundary condition for variable u, y component = NATURAL, NATURAL, DIRICHLET: 0.0, DIRICHLET: 0.04
-set Boundary condition for variable u, z component = PERIODIC
+set Boundary condition for variable u, z component = NATURAL
 
 #set Boundary condition for variable u, x component = DIRICHLET: 0.0, DIRICHLET: 1.0, NATURAL, NATURAL
 #set Boundary condition for variable u, y component = NATURAL
@@ -151,17 +153,12 @@ set Boundary condition for variable u, z component = PERIODIC
 # Type options currently are double, int, bool, and tensor
 # Young's modulus distribution parameters
 
-# ideal crack velocity
-set Model constant vel = 0.2, double
+# angle of rotation
+set Model constant theta = 0.0, double
 
-# input stress intensity factor KI
-set Model constant KI = 302.0, double
-
-# composite shear modulus
-set Model constant mubar = 1.48e4, double
-
-# constant kappa=4-3nu
-set Model constant kappa = 1.808, double
+# parameters of time-dependent imposed average strain
+set Model constant epsilon0 = 0.07, double
+set Model constant epsilon1 = 0.0005, double
 
 # The Allen-Cahn mobilities
 set Model constant MnV = 1.0, double
@@ -177,4 +174,4 @@ set Model constant n_dependent_stiffness = true, bool
 
 set Model constant k_small = 1e-4, double
 
-set Model constant CIJ_Mg = (10.0,0.3), isotropic elastic constants
+set Model constant CIJ_Mg = (100.0,0.0), isotropic elastic constants

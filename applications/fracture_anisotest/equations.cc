@@ -10,7 +10,7 @@ void variableAttributeLoader::loadVariableAttributes(){
 	set_variable_type				(0,SCALAR);
 	set_variable_equation_type		(0,EXPLICIT_TIME_DEPENDENT);
 
-    set_dependencies_value_term_RHS(0, "n");
+    set_dependencies_value_term_RHS(0, "n, dndt");
     set_dependencies_gradient_term_RHS(0, "");
 	
 // Variable 1 - displacement field
@@ -23,13 +23,27 @@ void variableAttributeLoader::loadVariableAttributes(){
     set_dependencies_value_term_LHS(1, "");
     set_dependencies_gradient_term_LHS(1, "n, grad(change(u)), rand");
 
-// Variable 3 - random field
-	set_variable_name				(2,"rand");
+// Variable 2 - phase field update
+	set_variable_name				(2,"dndt");
 	set_variable_type				(2,SCALAR);
-	set_variable_equation_type		(2,EXPLICIT_TIME_DEPENDENT);
+	set_variable_equation_type		(2,AUXILIARY);
 
-    set_dependencies_value_term_RHS(2, "rand");
-    set_dependencies_gradient_term_RHS(2, "");
+    set_dependencies_value_term_RHS(2, "n, grad(u), rand, rand2");
+    set_dependencies_gradient_term_RHS(2, "grad(n), rand2");
+// Variable 3 - random field
+	set_variable_name				(3,"rand");
+	set_variable_type				(3,SCALAR);
+	set_variable_equation_type		(3,EXPLICIT_TIME_DEPENDENT);
+
+    set_dependencies_value_term_RHS(3, "rand");
+    set_dependencies_gradient_term_RHS(3, "");
+// Variable 4 - random field
+	set_variable_name				(4,"rand2");
+	set_variable_type				(4,SCALAR);
+	set_variable_equation_type		(4,EXPLICIT_TIME_DEPENDENT);
+
+    set_dependencies_value_term_RHS(4, "rand2");
+    set_dependencies_gradient_term_RHS(4, "");
 	
 }
 
@@ -47,9 +61,24 @@ void variableAttributeLoader::loadVariableAttributes(){
 template <int dim, int degree>
 void customPDE<dim,degree>::explicitEquationRHS(variableContainer<dim,degree,dealii::VectorizedArray<double> > & variable_list,
 				 dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
+// The phase field and the variable containing its update
+scalarvalueType n = variable_list.get_scalar_value(0);
+scalarvalueType dndt = variable_list.get_scalar_value(2);
 
-variable_list.set_scalar_value_term_RHS(0, variable_list.get_scalar_value(0));
-variable_list.set_scalar_value_term_RHS(2, variable_list.get_scalar_value(2));
+
+// enforcing irreversibility: phase field must increase monotonically
+for (unsigned int j=0; j<dndt.n_array_elements; ++j){
+    if (dndt[j] > 0.0) dndt[j] = 0.0;
+// phase field also cannot exceed 1
+    if (n[j] - dndt[j]*(userInputs.dtValue*MnV) > 1.0) dndt[j] = (n[j]-1.0)/(userInputs.dtValue*MnV);
+}
+
+// update to phase field 
+scalarvalueType eq_n = (n-constV(userInputs.dtValue*MnV)*dndt);
+
+variable_list.set_scalar_value_term_RHS(0,eq_n);
+variable_list.set_scalar_value_term_RHS(3, variable_list.get_scalar_value(3) );
+variable_list.set_scalar_value_term_RHS(4, variable_list.get_scalar_value(4) );
 }
 
 
@@ -73,16 +102,23 @@ void customPDE<dim,degree>::nonExplicitEquationRHS(variableContainer<dim,degree,
 
 //n
 scalarvalueType n = variable_list.get_scalar_value(0);
-//scalargradType nx = variable_list.get_scalar_gradient(0);
+scalargradType nx = variable_list.get_scalar_gradient(0);
 //u
 vectorgradType ux = variable_list.get_vector_gradient(1);
 //rand
-scalarvalueType rand = variable_list.get_scalar_value(2);
+scalarvalueType rand = variable_list.get_scalar_value(3);
+scalarvalueType rand2 = variable_list.get_scalar_value(4);
 
 dealii::Tensor<2, CIJ_tensor_size, dealii::VectorizedArray<double> > CIJ;
 dealii::Tensor<2, dim, dealii::VectorizedArray<double> > E, sfts;
-vectorgradType S;
 
+double base = epsilon0+currentTime*epsilon1;
+sfts[0][0] = base*std::sin(theta)*sin(theta);
+sfts[1][0] = base*std::cos(theta)*sin(theta);
+sfts[0][1] = sfts[1][0];
+sfts[1][1] = base*std::cos(theta)*cos(theta);
+
+vectorgradType S;
 
 for (unsigned int i=0; i<2*dim-1+dim/3; i++){
           for (unsigned int j=0; j<2*dim-1+dim/3; j++){
@@ -90,15 +126,13 @@ for (unsigned int i=0; i<2*dim-1+dim/3; i++){
           }
 }
 
-sfts[1][1] = 0.01*currentTime;
-
-//compute stress tensor
 for (unsigned int i=0; i<dim; i++){
         for (unsigned int j=0; j<dim; j++){
                 E[i][j]= constV(0.5)*(ux[i][j]+ux[j][i])+sfts[i][j];
         }
 }
 
+//compute stress tensor
 computeStress<dim>(CIJ, E, S);
 
 
@@ -117,17 +151,17 @@ for (unsigned int i=0; i<dim; i++){
 }
 
 // compute elastic energy density (without interpolation function)
-/*dealii::VectorizedArray<double> elastic_energy=constV(0.0);
+dealii::VectorizedArray<double> elastic_energy=constV(0.0);
 
 for (unsigned int i=0; i<dim; i++){
           for (unsigned int j=0; j<dim; j++){
                   elastic_energy += constV(0.5)*S[i][j]*E[i][j];
           }
 }
-*/
+
 // phase field update: (interpolation f'n)*(elastic energy)+bulk energy
 // Pham et al. example 1
-// scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(gc_ell))*rand2;
+ scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(gc_ell))*rand2;
 // Pham et al. example 2 (most common model)
 //scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + 2.0*gc_ell*n);
 // Pham et al. example 3
@@ -138,15 +172,14 @@ for (unsigned int i=0; i<dim; i++){
 // scalarvalueType eq_n = (constV(2.0)*(n-constV(1.0))*elastic_energy + constV(1.5*gc_ell))*rand2*(constV(1.01) - 2.0*n);
 
 // phase field update: gradient term (Laplacian in strong form)
-//scalargradType eqx_n = (constV(ell2)*nx*rand2);
+scalargradType eqx_n = (constV(ell2)*nx*rand2);
 
 // --- Submitting the terms for the governing equations ---
 // mechanics
 variable_list.set_vector_gradient_term_RHS(1,eqx_u);
 // phase field
-//variable_list.set_scalar_value_term_RHS(2,eq_n);
-//variable_list.set_scalar_gradient_term_RHS(2,eqx_n);
-
+variable_list.set_scalar_value_term_RHS(2,eq_n);
+variable_list.set_scalar_gradient_term_RHS(2,eqx_n);
 
 }
 
@@ -174,7 +207,7 @@ scalarvalueType n = variable_list.get_scalar_value(0);
 // displacement
 vectorgradType Dux = variable_list.get_change_in_vector_gradient(1);
 // random field
-scalarvalueType rand = variable_list.get_scalar_value(2);
+scalarvalueType rand = variable_list.get_scalar_value(3);
 
 // --- Setting the expressions for the terms in the governing equations ---
 
