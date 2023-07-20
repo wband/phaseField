@@ -16,9 +16,16 @@
 void variableAttributeLoader::loadVariableAttributes(){
     const unsigned int n_phases{4};
     const unsigned int n_components{2};
+    std::string string_valn = "";
+    std::string string_valdndt = "";
+    std::string string_valmu = "";
+    std::string string_gradn = "";
+    std::string string_gradmu = "";
     for (unsigned int var_index=0; var_index<n_phases; var_index++){
         std::string var_name = "n";
         var_name.append(std::to_string(var_index));
+        string_valn.append(var_name+",");
+        string_gradn.append("grad("+var_name+"),");
         set_variable_name				(var_index,var_name);
     	set_variable_type				(var_index,SCALAR);
     	set_variable_equation_type		(var_index,EXPLICIT_TIME_DEPENDENT);
@@ -26,7 +33,8 @@ void variableAttributeLoader::loadVariableAttributes(){
     for (unsigned int var_index=0; var_index<n_components; var_index++){
         std::string var_name = "mu";
         var_name.append(std::to_string(var_index));
-
+        string_valmu.append(var_name+",");
+        string_gradmu.append("grad("+var_name+"),");
         set_variable_name				(n_phases+var_index,var_name);
     	set_variable_type				(n_phases+var_index,SCALAR);
     	set_variable_equation_type		(n_phases+var_index,EXPLICIT_TIME_DEPENDENT);
@@ -34,22 +42,30 @@ void variableAttributeLoader::loadVariableAttributes(){
     for (unsigned int var_index=0; var_index<n_phases; var_index++){
         std::string var_name = "dndt";
         var_name.append(std::to_string(var_index));
-
+        string_valdndt.append(var_name+",");
         set_variable_name				(n_phases+n_components+var_index,var_name);
     	set_variable_type				(n_phases+n_components+var_index,SCALAR);
     	set_variable_equation_type		(n_phases+n_components+var_index,AUXILIARY);
     }
+    std::cout << string_valn << ", " << string_valmu << ", " << string_valdndt << ", "
+        << string_gradn << ", " << string_gradmu << "\n";
+    std::string dep_valn = string_valn+string_valdndt;
+    std::string dep_valmudndt = string_valn+string_valmu+string_valdndt;
+    dep_valn.pop_back();
+    dep_valmudndt.pop_back();
+    string_gradmu.pop_back();
+    string_gradn.pop_back();
     for (unsigned int var_index=0; var_index<n_phases; var_index++){
-        set_dependencies_value_term_RHS(var_index, "n0,n1,n2,n3,dndt0,dndt1,dndt2,dndt3");
+        set_dependencies_value_term_RHS(var_index, dep_valn);
         set_dependencies_gradient_term_RHS(var_index, "");
     }
     for (unsigned int var_index=n_phases; var_index<n_phases+n_components; var_index++){
-        set_dependencies_value_term_RHS(var_index, "n0,n1,n2,n3,mu0,mu1,dndt0,dndt1,dndt2,dndt3");
-        set_dependencies_gradient_term_RHS(var_index, "grad(mu0),grad(mu1)");
+        set_dependencies_value_term_RHS(var_index, dep_valmudndt);
+        set_dependencies_gradient_term_RHS(var_index, string_gradmu);
     }
     for (unsigned int var_index=n_phases+n_components; var_index<2*n_phases+n_components; var_index++){
-        set_dependencies_value_term_RHS(var_index, "n0,n1,n2,n3,mu0,mu1,dndt0,dndt1,dndt2,dndt3");
-        set_dependencies_gradient_term_RHS(var_index, "grad(n0), grad(n1), grad(n2), grad(n3)");
+        set_dependencies_value_term_RHS(var_index, dep_valmudndt);
+        set_dependencies_gradient_term_RHS(var_index, string_gradn);
     }
 }
 
