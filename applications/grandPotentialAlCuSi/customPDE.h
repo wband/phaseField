@@ -48,11 +48,11 @@ private:
 					variableContainer<dim,degree,dealii::VectorizedArray<double> > & pp_variable_list,
 					const dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const;
 	#endif
-
+        #ifdef NUCLEATION_FILE_EXISTS
+        double getNucleationProbability(variableValueContainer variable_value, double dV) const;
+        #endif
 	// Function to set the nucleation probability (in nucleation.h)
-	#ifdef NUCLEATION_FILE_EXISTS
-	double getNucleationProbability(variableValueContainer variable_value, double dV) const;
-	#endif
+  // double getNucleationProbability(variableValueContainer variable_value, double dV, dealii::Point<dim> p, unsigned int variable_index) const
 
 	// ================================================================
 	// Methods specific to this subclass
@@ -62,10 +62,19 @@ private:
 	// ================================================================
 	// Model constants specific to this subclass
 	// ================================================================
-    //Declaring random number generator (Type std::mt19937_64)
-    engine rng;
-    //Declaring distribution (Type std::uniform_real_distribution<double>)
-    distribution dist;
+        const std::vector<std::vector<double>> kWell
+            {{0.8,0.8,0.8},{1.0,2.0,1.0},{2.0,2.0,2.0},{50.0,50.0,50.0}};
+        const std::vector<std::vector<double>> cmin
+            {{0.75,0.1,0.15},{0.94,0.03,0.03},{0.67,0.33,0.0},{0.0,0.0,1.0}};
+        const std::vector<double> fWell{1.0,0.0,0.0,0.0};
+        const double L{1.0}, mWell{0.1}, kappa{0.0125}, Va{1.0}, gamma{1.5};
+        const double M{1.0};
+
+
+        //Declaring random number generator (Type std::mt19937_64)
+         engine rng;
+         //Declaring distribution (Type std::uniform_real_distribution<double>)
+         distribution dist;
 	// ================================================================
 
 };
