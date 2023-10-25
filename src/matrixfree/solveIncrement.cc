@@ -6,9 +6,12 @@
 //solve each time increment
 template <int dim, int degree>
 void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
+  
+    bool field_has_nonuniform_Dirichlet_BCs;
+    unsigned int starting_BC_list_index;
 
     //log time
-    computing_timer.enter_section("matrixFreePDE: solveIncrements");
+    computing_timer.enter_subsection("matrixFreePDE: solveIncrements");
     Timer time;
     char buffer[200];
 
@@ -31,31 +34,89 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
 
             // Explicit-time step each DOF
             // Takes advantage of knowledge that the length of solutionSet and residualSet is an integer multiple of the length of invM for vector variables
+#if (DEAL_II_VERSION_MAJOR == 9 && DEAL_II_VERSION_MINOR < 4)
             unsigned int invM_size = invM.local_size();
             for (unsigned int dof=0; dof<solutionSet[fieldIndex]->local_size(); ++dof){
+#else
+            unsigned int invM_size = invM.locally_owned_size();
+            for (unsigned int dof=0; dof<solutionSet[fieldIndex]->locally_owned_size(); ++dof){
+#endif
                 solutionSet[fieldIndex]->local_element(dof)=			\
                 invM.local_element(dof%invM_size)*residualSet[fieldIndex]->local_element(dof);
             }
+          
             // Set the Dirichelet values (hanging node constraints don't need to be distributed every time step, only at output)
             if (has_Dirichlet_BCs){
+              
+                //TEMPORARY SECTION (Add to a method later)
+                //Check if any of the Dirichlet BCs if nonuniform
+                field_has_nonuniform_Dirichlet_BCs = false;
+              
+                // First, get the starting_BC_list_index for the current field
+                starting_BC_list_index = 0;
+                for (unsigned int i=0; i<currentFieldIndex; i++){
+                  
+                  if (userInputs.var_type[i] == SCALAR){
+                    starting_BC_list_index++;
+                  }
+                  else {
+                    starting_BC_list_index+=dim;
+                  }
+                }
+                //Checking for non-uniform Dirichlet BCs if the field is scalar
+                if (userInputs.var_type[currentFieldIndex] == SCALAR){
+                    for (unsigned int direction = 0; direction < 2*dim; direction++){
+                        if (userInputs.BC_list[starting_BC_list_index].var_BC_type[direction] == NON_UNIFORM_DIRICHLET){
+                          field_has_nonuniform_Dirichlet_BCs = true;
+                          break;
+                        }
+                    }
+                } else {
+                //Checking for non-uniform Dirichlet BCs if the field is nonscalar
+                    for (unsigned int direction = 0; direction < 2*dim; direction++){
+                       for (unsigned int component=0; component < dim; component++){
+                          if (userInputs.BC_list[starting_BC_list_index+component].var_BC_type[direction] == NON_UNIFORM_DIRICHLET){
+                            field_has_nonuniform_Dirichlet_BCs = true;
+                            break;
+                          }
+                       }
+                    }
+                }
+                // Apply non-uniform Dirlichlet_BCs to the current field
+                if (field_has_nonuniform_Dirichlet_BCs) {
+                    DoFHandler<dim>* dof_handler;
+                    dof_handler=dofHandlersSet_nonconst.at(currentFieldIndex);
+                    IndexSet* locally_relevant_dofs;
+                    locally_relevant_dofs=locally_relevant_dofsSet_nonconst.at(currentFieldIndex);
+                    locally_relevant_dofs->clear();
+                    DoFTools::extract_locally_relevant_dofs (*dof_handler, *locally_relevant_dofs);
+                    AffineConstraints<double> *constraintsDirichlet;
+                    constraintsDirichlet=constraintsDirichletSet_nonconst.at(currentFieldIndex);
+                    constraintsDirichlet->clear(); constraintsDirichlet->reinit(*locally_relevant_dofs);
+                    applyDirichletBCs();
+                    constraintsDirichlet->close();
+                }
+                //Distribute for Uniform or Non-Uniform Dirichlet BCs
                 constraintsDirichletSet[fieldIndex]->distribute(*solutionSet[fieldIndex]);
             }
-            //computing_timer.enter_section("matrixFreePDE: updateExplicitGhosts");
+
+            //computing_timer.enter_subsection("matrixFreePDE: updateExplicitGhosts");
+
             solutionSet[fieldIndex]->update_ghost_values();
-            //computing_timer.exit_section("matrixFreePDE: updateExplicitGhosts");
+            //computing_timer.leave_subsection("matrixFreePDE: updateExplicitGhosts");
 
             // Print update to screen and confirm that solution isn't nan
             if (currentIncrement%userInputs.skip_print_steps==0){
                 double solution_L2_norm = solutionSet[fieldIndex]->l2_norm();
 
-                sprintf(buffer, "field '%2s' [explicit solve]: current solution: %12.6e, current residual:%12.6e\n", \
+                snprintf(buffer, sizeof(buffer), "field '%2s' [explicit solve]: current solution: %12.6e, current residual:%12.6e\n", \
                 fields[fieldIndex].name.c_str(),				\
                 solution_L2_norm,			\
                 residualSet[fieldIndex]->l2_norm());
                 pcout<<buffer;
 
                 if (!numbers::is_finite(solution_L2_norm)){
-                    sprintf(buffer, "ERROR: field '%s' solution is NAN. exiting.\n\n",
+                    snprintf(buffer, sizeof(buffer), "ERROR: field '%s' solution is NAN. exiting.\n\n",
                     fields[fieldIndex].name.c_str());
                     pcout<<buffer;
                     exit(-1);
@@ -88,14 +149,14 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
                 if ( (fields[fieldIndex].pdetype == IMPLICIT_TIME_DEPENDENT && !skip_time_dependent) || fields[fieldIndex].pdetype == TIME_INDEPENDENT){
 
                     if (currentIncrement%userInputs.skip_print_steps==0 && userInputs.var_nonlinear[fieldIndex]){
-                        sprintf(buffer, "field '%2s' [nonlinear solve]: current solution: %12.6e, current residual:%12.6e\n", \
+                        snprintf(buffer, sizeof(buffer), "field '%2s' [nonlinear solve]: current solution: %12.6e, current residual:%12.6e\n", \
                         fields[fieldIndex].name.c_str(),				\
                         solutionSet[fieldIndex]->l2_norm(),			\
                         residualSet[fieldIndex]->l2_norm());
                         pcout<<buffer;
                     }
 
-                    dealii::parallel::distributed::Vector<double> solution_diff = *solutionSet[fieldIndex];
+                    dealii::LinearAlgebra::distributed::Vector<double> solution_diff = *solutionSet[fieldIndex];
 
                     //apply Dirichlet BC's
                     // Loops through all DoF to which ones have Dirichlet BCs applied, replace the ones that do with the Dirichlet value
@@ -197,7 +258,7 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
                             else {
                                 dU_norm = dU_vector.l2_norm();
                             }
-                            sprintf(buffer, "field '%2s' [linear solve]: initial residual:%12.6e, current residual:%12.6e, nsteps:%u, tolerance criterion:%12.6e, solution: %12.6e, dU: %12.6e\n", \
+                            snprintf(buffer, sizeof(buffer), "field '%2s' [linear solve]: initial residual:%12.6e, current residual:%12.6e, nsteps:%u, tolerance criterion:%12.6e, solution: %12.6e, dU: %12.6e\n", \
                             fields[fieldIndex].name.c_str(),			\
                             residualSet[fieldIndex]->l2_norm(),			\
                             solver_control.last_value(),				\
@@ -245,7 +306,7 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
                                 else {
                                     dU_norm = dU_vector.l2_norm();
                                 }
-                                sprintf(buffer, "field '%2s' [linear solve]: initial residual:%12.6e, current residual:%12.6e, nsteps:%u, tolerance criterion:%12.6e, solution: %12.6e, dU: %12.6e\n", \
+                                snprintf(buffer, sizeof(buffer), "field '%2s' [linear solve]: initial residual:%12.6e, current residual:%12.6e, nsteps:%u, tolerance criterion:%12.6e, solution: %12.6e, dU: %12.6e\n", \
                                 fields[fieldIndex].name.c_str(),			\
                                 residualSet[fieldIndex]->l2_norm(),			\
                                 solver_control.last_value(),				\
@@ -272,19 +333,77 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
 
                         // Explicit-time step each DOF
                         // Takes advantage of knowledge that the length of solutionSet and residualSet is an integer multiple of the length of invM for vector variables
+#if (DEAL_II_VERSION_MAJOR == 9 && DEAL_II_VERSION_MINOR < 4)
                         unsigned int invM_size = invM.local_size();
                         for (unsigned int dof=0; dof<solutionSet[fieldIndex]->local_size(); ++dof){
+#else
+                        unsigned int invM_size = invM.locally_owned_size();
+                        for (unsigned int dof=0; dof<solutionSet[fieldIndex]->locally_owned_size(); ++dof){
+#endif
                             solutionSet[fieldIndex]->local_element(dof)=			\
                             invM.local_element(dof%invM_size)*residualSet[fieldIndex]->local_element(dof);
                         }
 
                         // Set the Dirichelet values (hanging node constraints don't need to be distributed every time step, only at output)
-                        constraintsDirichletSet[fieldIndex]->distribute(*solutionSet[fieldIndex]);
+                        if (has_Dirichlet_BCs){
+              
+                            //TEMPORARY SECTION (Add to a method later)
+                            //Check if any of the Dirichlet BCs if nonuniform
+                            field_has_nonuniform_Dirichlet_BCs = false;
+                        
+                            // First, get the starting_BC_list_index for the current field
+                            starting_BC_list_index = 0;
+                            for (unsigned int i=0; i<currentFieldIndex; i++){
+                            
+                            if (userInputs.var_type[i] == SCALAR){
+                                starting_BC_list_index++;
+                            }
+                            else {
+                                starting_BC_list_index+=dim;
+                            }
+                            }
+                            //Checking for non-uniform Dirichlet BCs if the field is scalar
+                            if (userInputs.var_type[currentFieldIndex] == SCALAR){
+                                for (unsigned int direction = 0; direction < 2*dim; direction++){
+                                    if (userInputs.BC_list[starting_BC_list_index].var_BC_type[direction] == NON_UNIFORM_DIRICHLET){
+                                    field_has_nonuniform_Dirichlet_BCs = true;
+                                    break;
+                                    }
+                                }
+                            } else {
+                            //Checking for non-uniform Dirichlet BCs if the field is nonscalar
+                                for (unsigned int direction = 0; direction < 2*dim; direction++){
+                                for (unsigned int component=0; component < dim; component++){
+                                    if (userInputs.BC_list[starting_BC_list_index+component].var_BC_type[direction] == NON_UNIFORM_DIRICHLET){
+                                        field_has_nonuniform_Dirichlet_BCs = true;
+                                        break;
+                                    }
+                                }
+                                }
+                            }
+                            // Apply non-uniform Dirlichlet_BCs to the current field
+                            if (field_has_nonuniform_Dirichlet_BCs) {
+                                DoFHandler<dim>* dof_handler;
+                                dof_handler=dofHandlersSet_nonconst.at(currentFieldIndex);
+                                IndexSet* locally_relevant_dofs;
+                                locally_relevant_dofs=locally_relevant_dofsSet_nonconst.at(currentFieldIndex);
+                                locally_relevant_dofs->clear();
+                                DoFTools::extract_locally_relevant_dofs (*dof_handler, *locally_relevant_dofs);
+                                AffineConstraints<double> *constraintsDirichlet;
+                                constraintsDirichlet=constraintsDirichletSet_nonconst.at(currentFieldIndex);
+                                constraintsDirichlet->clear(); constraintsDirichlet->reinit(*locally_relevant_dofs);
+                                applyDirichletBCs();
+                                constraintsDirichlet->close();
+                            }
+                            //Distribute for Uniform or Non-Uniform Dirichlet BCs
+                            constraintsDirichletSet[fieldIndex]->distribute(*solutionSet[fieldIndex]);
+                        }
+
                         solutionSet[fieldIndex]->update_ghost_values();
 
                         // Print update to screen
                         if (currentIncrement%userInputs.skip_print_steps==0){
-                            sprintf(buffer, "field '%2s' [auxiliary solve]: current solution: %12.6e, current residual:%12.6e\n", \
+                            snprintf(buffer, sizeof(buffer), "field '%2s' [auxiliary solve]: current solution: %12.6e, current residual:%12.6e\n", \
                             fields[fieldIndex].name.c_str(),				\
                             solutionSet[fieldIndex]->l2_norm(),			\
                             residualSet[fieldIndex]->l2_norm());
@@ -323,7 +442,7 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
 
                 //check if solution is nan
                 if (!numbers::is_finite(solutionSet[fieldIndex]->l2_norm())){
-                    sprintf(buffer, "ERROR: field '%s' solution is NAN. exiting.\n\n",
+                    snprintf(buffer, sizeof(buffer), "ERROR: field '%s' solution is NAN. exiting.\n\n",
                     fields[fieldIndex].name.c_str());
                     pcout<<buffer;
                     exit(-1);
@@ -339,7 +458,7 @@ void MatrixFreePDE<dim,degree>::solveIncrement(bool skip_time_dependent){
         pcout << "wall time: " << time.wall_time() << "s\n";
     }
     //log time
-    computing_timer.exit_section("matrixFreePDE: solveIncrements");
+    computing_timer.leave_subsection("matrixFreePDE: solveIncrements");
 
 }
 

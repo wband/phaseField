@@ -44,7 +44,7 @@ void  MatrixFreePDE<dim,degree>::computeIntegral(double& integratedField, int in
 template <int dim, int degree>
 void MatrixFreePDE<dim,degree>::computeIntegralMF(double& integratedField, int index, const std::vector<vectorType*> variableSet){
   //log time
-  computing_timer.enter_section("matrixFreePDE: computeIntegralMF");
+  computing_timer.enter_subsection("matrixFreePDE: computeIntegralMF");
 
   integrated_var = 0.0;
   integral_index = index;
@@ -55,7 +55,7 @@ void MatrixFreePDE<dim,degree>::computeIntegralMF(double& integratedField, int i
   integratedField=Utilities::MPI::sum(integrated_var, MPI_COMM_WORLD);
 
   //end log
-  computing_timer.exit_section("matrixFreePDE: computeIntegralMF");
+  computing_timer.leave_subsection("matrixFreePDE: computeIntegralMF");
 }
 
 template <int dim, int degree>
@@ -74,23 +74,16 @@ void MatrixFreePDE<dim,degree>::getIntegralMF(const MatrixFree<dim,double> &data
 
         unsigned int num_q_points = var.n_q_points;
 
-		dealii::AlignedVector<dealii::VectorizedArray<double> > JxW(num_q_points);
-		var.fill_JxW_values(JxW);
-
         //loop over quadrature points
         for (unsigned int q=0; q<num_q_points; ++q){
-
-
 			dealii::VectorizedArray<double> val = var.get_value(q);
-			assembler_lock.acquire ();
-			for (unsigned i=0; i<val.n_array_elements;i++){
-				integrated_var += val[i]*JxW[q][i];
+			dealii::VectorizedArray<double> jxw = var.JxW(q);
+			assembler_lock.lock ();
+			for (unsigned i=0; i<val.size();i++){
+				integrated_var += val[i]*jxw[i];
 			}
-			assembler_lock.release ();
-
+			assembler_lock.unlock ();
         }
-
-
     }
 }
 

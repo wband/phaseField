@@ -48,8 +48,8 @@ template <int dim, int degree>
    DoFTools::extract_locally_relevant_dofs (*dof_handler, *locally_relevant_dofs);
 
    // //create constraints
-   ConstraintMatrix *constraintsOther;
-   constraintsOther=new ConstraintMatrix; constraintsOtherSet.push_back(constraintsOther);
+   AffineConstraints<double> *constraintsOther;
+   constraintsOther=new AffineConstraints<double>; constraintsOtherSet.push_back(constraintsOther);
    constraintsOtherSet_nonconst.push_back(constraintsOther);
    constraintsOther->clear(); constraintsOther->reinit(*locally_relevant_dofs);
    DoFTools::make_hanging_node_constraints (*dof_handler, *constraintsOther);
@@ -57,16 +57,16 @@ template <int dim, int degree>
    //
    // //setup the matrix free object
    typename MatrixFree<dim,double>::AdditionalData additional_data;
-   // The member "mpi_communicator" was removed in deal.II version 8.5 but is required before it
-   #if (DEAL_II_VERSION_MAJOR < 9 && DEAL_II_VERSION_MINOR < 5)
-       additional_data.mpi_communicator = MPI_COMM_WORLD;
-   #endif
    additional_data.tasks_parallel_scheme = MatrixFree<dim,double>::AdditionalData::partition_partition;
    additional_data.mapping_update_flags = (update_values | update_gradients | update_JxW_values | update_quadrature_points);
    QGaussLobatto<1> quadrature (degree+1);
    matrixFreeObject.clear();
+#if (DEAL_II_VERSION_MAJOR == 9 && DEAL_II_VERSION_MINOR < 4)
    matrixFreeObject.reinit (dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
-
+#else
+   matrixFreeObject.reinit (MappingFE< dim, dim >(FE_Q<dim>(QGaussLobatto<1>(degree+1))),
+       dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
+#endif
    //setup problem vectors
    vectorType *U, *R;
    U=new vectorType; R=new vectorType;

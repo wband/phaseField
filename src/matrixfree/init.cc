@@ -7,7 +7,7 @@
  //populate with fields and setup matrix free system
 template <int dim, int degree>
  void MatrixFreePDE<dim,degree>::init(){
-	 computing_timer.enter_section("matrixFreePDE: initialization");
+	 computing_timer.enter_subsection("matrixFreePDE: initialization");
 
 	 //creating mesh
 
@@ -61,7 +61,7 @@ template <int dim, int degree>
              var_type = "AUXILIARY";
          }
 
-		 sprintf(buffer,"initializing finite element space P^%u for %9s:%6s field '%s'\n", \
+         snprintf(buffer, sizeof(buffer),"initializing finite element space P^%u for %9s:%6s field '%s'\n", \
 				 degree,					\
 			   var_type.c_str(), \
                (it->type==SCALAR ? "SCALAR":"VECTOR"), \
@@ -128,11 +128,11 @@ template <int dim, int degree>
 		 DoFTools::extract_locally_relevant_dofs (*dof_handler, *locally_relevant_dofs);
 
 		 // Create constraints
-		 ConstraintMatrix *constraintsDirichlet, *constraintsOther;
+         AffineConstraints<double> *constraintsDirichlet, *constraintsOther;
 
-		 constraintsDirichlet=new ConstraintMatrix; constraintsDirichletSet.push_back(constraintsDirichlet);
+		 constraintsDirichlet=new AffineConstraints<double>; constraintsDirichletSet.push_back(constraintsDirichlet);
 		 constraintsDirichletSet_nonconst.push_back(constraintsDirichlet);
-		 constraintsOther=new ConstraintMatrix; constraintsOtherSet.push_back(constraintsOther);
+		 constraintsOther=new AffineConstraints<double>; constraintsOtherSet.push_back(constraintsOther);
 		 constraintsOtherSet_nonconst.push_back(constraintsOther);
 		 valuesDirichletSet.push_back(new std::map<dealii::types::global_dof_index, double>);
 
@@ -150,16 +150,16 @@ template <int dim, int degree>
 		 // Get constraints for periodic BCs
 		 setPeriodicityConstraints(constraintsOther,dof_handler);
 
-         // Check if Dirichlet BCs are used
-         has_Dirichlet_BCs = false;
-         for (unsigned int i=0; i<fields.size(); i++){
-             for (unsigned int direction = 0; direction < 2*dim; direction++){
-                 if (userInputs.BC_list[i].var_BC_type[direction] == DIRICHLET){
-                     has_Dirichlet_BCs = true;
-                     break;
-                 }
+     // Check if Dirichlet BCs are used
+     has_Dirichlet_BCs = false;
+     for (unsigned int i=0; i<userInputs.BC_list.size(); i++){
+         for (unsigned int direction = 0; direction < 2*dim; direction++){
+             if (userInputs.BC_list[i].var_BC_type[direction] == DIRICHLET || userInputs.BC_list[i].var_BC_type[direction] == NON_UNIFORM_DIRICHLET){
+                 has_Dirichlet_BCs = true;
+                 break;
              }
          }
+     }
 
 		 // Get constraints for Dirichlet BCs
 		 applyDirichletBCs();
@@ -177,7 +177,7 @@ template <int dim, int degree>
 			 }
 		 }
 
-		 sprintf(buffer, "field '%2s' DOF : %u (Constraint DOF : %u)\n", \
+         snprintf(buffer, sizeof(buffer), "field '%2s' DOF : %u (Constraint DOF : %u)\n", \
 				 it->name.c_str(), dof_handler->n_dofs(), constraintsDirichlet->n_constraints());
 		 pcout << buffer;
 	 }
@@ -194,8 +194,12 @@ template <int dim, int degree>
 	 additional_data.mapping_update_flags = (update_values | update_gradients | update_JxW_values | update_quadrature_points);
 	 QGaussLobatto<1> quadrature (degree+1);
 	 matrixFreeObject.clear();
-	 matrixFreeObject.reinit (dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
-
+#if (DEAL_II_VERSION_MAJOR == 9 && DEAL_II_VERSION_MINOR < 4)
+         matrixFreeObject.reinit (dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
+#else
+	 matrixFreeObject.reinit (MappingFE< dim, dim >(FE_Q<dim>(QGaussLobatto<1>(degree+1))),
+	     dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
+#endif
 	 bool dU_scalar_init = false;
 	 bool dU_vector_init = false;
 
@@ -266,7 +270,7 @@ template <int dim, int degree>
           load_checkpoint_time_info();
       }
 
-	 computing_timer.exit_section("matrixFreePDE: initialization");
+	 computing_timer.leave_subsection("matrixFreePDE: initialization");
 }
 
 template <int dim, int degree>

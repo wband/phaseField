@@ -163,7 +163,7 @@ template <int dim,typename T>
     additional_data.mapping_update_flags = (update_values | update_gradients | update_JxW_values | update_quadrature_points);
     QGaussLobatto<1> quadrature (degree+1);
 
-    ConstraintMatrix constraints;
+    AffineConstraints<double> constraints;
     constraints.clear();
 
     dealii::MatrixFree<dim,double> matrixFreeObject;
@@ -228,7 +228,7 @@ template <int dim,typename T>
 
     pass = result;
 
-	sprintf (buffer, "Test result for 'FloodFiller': %u\n", pass);
+	snprintf(buffer, sizeof(buffer), "Test result for 'FloodFiller': %u\n", pass);
 	std::cout << buffer;
 
 	return pass;

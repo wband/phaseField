@@ -9,7 +9,7 @@
 // #include <deal.II/base/quadrature.h>
 // #include <deal.II/base/timer.h>
 #include <deal.II/lac/vector.h>
-// #include <deal.II/lac/constraint_matrix.h>
+// #include <deal.II/lac/affine_constraints.h>
 // #include <deal.II/fe/fe_system.h>
 // #include <deal.II/fe/fe_q.h>
 // #include <deal.II/fe/fe_values.h>
@@ -20,7 +20,7 @@
 // #include <deal.II/dofs/dof_tools.h>
 // #include <deal.II/dofs/dof_handler.h>
 // #include <deal.II/numerics/vector_tools.h>
-// #include <deal.II/lac/parallel_vector.h>
+// #include <deal.II/lac/la_parallel_vector.h>
 // #include <deal.II/matrix_free/matrix_free.h>
 // #include <deal.II/matrix_free/fe_evaluation.h>
 // #include <deal.II/base/config.h>
@@ -86,9 +86,6 @@ public:
     unsigned int q_point;
     unsigned int get_num_q_points();
     dealii::Point<dim,T> get_q_point_location();
-
-    // Method to obtain JxW (the weighted Jacobian)
-    void get_JxW(dealii::AlignedVector<T> & JxW);
 
 private:
     // The number of variables

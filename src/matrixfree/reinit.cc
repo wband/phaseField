@@ -6,7 +6,7 @@
 template <int dim, int degree>
  void MatrixFreePDE<dim,degree>::reinit(){
 
-	 computing_timer.enter_section("matrixFreePDE: reinitialization");
+	 computing_timer.enter_subsection("matrixFreePDE: reinitialization");
 
 	 //setup system
 	 pcout << "Reinitializing matrix free object\n";
@@ -35,7 +35,7 @@ template <int dim, int degree>
 		 DoFTools::extract_locally_relevant_dofs (*dof_handler, *locally_relevant_dofs);
 
 		 //create constraints
-		 ConstraintMatrix *constraintsDirichlet, *constraintsOther;
+         AffineConstraints<double> *constraintsDirichlet, *constraintsOther;
 
 		 constraintsDirichlet=constraintsDirichletSet_nonconst.at(it->index);
 		 constraintsOther=constraintsOtherSet_nonconst.at(it->index);
@@ -70,7 +70,7 @@ template <int dim, int degree>
 			 }
 		 }
 
-		 sprintf(buffer, "field '%2s' DOF : %u (Constraint DOF : %u)\n", \
+		 snprintf(buffer, sizeof(buffer), "field '%2s' DOF : %u (Constraint DOF : %u)\n", \
 				 it->name.c_str(), dof_handler->n_dofs(), constraintsDirichlet->n_constraints());
 		 pcout << buffer;
 	 }
@@ -79,17 +79,18 @@ template <int dim, int degree>
  	 // Setup the matrix free object
  	 typename MatrixFree<dim,double>::AdditionalData additional_data;
      // The member "mpi_communicator" was removed in deal.II version 8.5 but is required before it
-     #if (DEAL_II_VERSION_MAJOR < 9 && DEAL_II_VERSION_MINOR < 5)
-         additional_data.mpi_communicator = MPI_COMM_WORLD;
-     #endif
  	 additional_data.tasks_parallel_scheme = MatrixFree<dim,double>::AdditionalData::partition_partition;
      //additional_data.tasks_parallel_scheme = MatrixFree<dim,double>::AdditionalData::none;
      //additional_data.tasks_block_size = 1; // This improves performance for small runs, not sure about larger runs
  	 additional_data.mapping_update_flags = (update_values | update_gradients | update_JxW_values | update_quadrature_points);
  	 QGaussLobatto<1> quadrature (degree+1);
  	 matrixFreeObject.clear();
- 	 matrixFreeObject.reinit (dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
-
+#if (DEAL_II_VERSION_MAJOR == 9 && DEAL_II_VERSION_MINOR < 4)
+         matrixFreeObject.reinit (dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
+#else
+ 	 matrixFreeObject.reinit (MappingFE< dim, dim >(FE_Q<dim>(QGaussLobatto<1>(degree+1))),
+             dofHandlersSet, constraintsOtherSet, quadrature, additional_data);
+#endif
  	bool dU_scalar_init = false;
  	bool dU_vector_init = false;
 
@@ -154,7 +155,7 @@ template <int dim, int degree>
 		 solutionSet[fieldIndex]->update_ghost_values();
  	 }
 
- 	 computing_timer.exit_section("matrixFreePDE: reinitialization");
+ 	 computing_timer.leave_subsection("matrixFreePDE: reinitialization");
 }
 
 #include "../../include/matrixFreePDE_template_instantiations.h"
