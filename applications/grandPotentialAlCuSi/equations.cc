@@ -29,25 +29,15 @@ void variableAttributeLoader::loadVariableAttributes(){
         set_variable_name				(var_index,var_name);
     	set_variable_type				(var_index,SCALAR);
     	set_variable_equation_type		(var_index,EXPLICIT_TIME_DEPENDENT);
-        
     }
     for (unsigned int var_index=0; var_index<n_components; var_index++){
         std::string var_name = "mu";
         var_name.append(std::to_string(var_index));
         string_valmu.append(var_name+",");
         string_gradmu.append("grad("+var_name+"),");
-        set_variable_name				(n_phases+var_index,var_name);
-    	set_variable_type				(n_phases+var_index,SCALAR);
-    	set_variable_equation_type		(n_phases+var_index,EXPLICIT_TIME_DEPENDENT);
-    }
-    for (unsigned int var_index=0; var_index<n_phases; var_index++){
-        std::string var_name = "dndt";
-        var_name.append(std::to_string(var_index));
         string_valdndt.append(var_name+",");
-        set_variable_name				(n_phases+n_components+var_index,var_name);
-    	set_variable_type				(n_phases+n_components+var_index,SCALAR);
-    	set_variable_equation_type		(n_phases+n_components+var_index,AUXILIARY);
     }
+
     std::cout << string_valn << ", " << string_valmu << ", " << string_valdndt << ", "
         << string_gradn << ", " << string_gradmu << "\n";
     std::string dep_valn = string_valn+string_valdndt;
@@ -94,6 +84,15 @@ std::vector<scalarvalueType> dndt_values(n_phases);
 std::vector<scalarvalueType> mu_values(n_components);
 std::vector<scalargradType> mu_gradients(n_components);
 
+<<<<<<< HEAD
+=======
+const std::vector<std::vector<double>> kWell
+    {{0.8,0.8},{2.0,1.0},{2.0,2.0},{50.0,50.0}};
+const std::vector<std::vector<double>> cmin
+    {{0.1,0.15},{0.03,0.03},{0.33,0.0},{0.0,1.0}};
+const double Va{1.0}, M{1.0};
+
+>>>>>>> wf/grandPotential
 for (unsigned int i=0; i<n_phases; ++i){
 	eta_values[i] = variable_list.get_scalar_value(i);
 	dndt_values[i] = variable_list.get_scalar_value(i+n_phases+n_components);
@@ -166,6 +165,17 @@ template <int dim, int degree>
 void customPDE<dim,degree>::nonExplicitEquationRHS(variableContainer<dim,degree,dealii::VectorizedArray<double> > & variable_list,
 				 dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
 
+<<<<<<< HEAD
+=======
+
+const std::vector<std::vector<double>> kWell
+    {{0.8,0.8,0.8},{1.0,2.0,1.0},{2.0,2.0,2.0},{50.0,50.0,50.0}};
+const std::vector<std::vector<double>> cmin
+    {{0.75,0.1,0.15},{0.94,0.03,0.03},{0.67,0.33,0.0},{0.0,0.0,1.0}};
+const std::vector<double> fWell{1.0,0.0,0.0,0.0};
+const double L{1.0}, mWell{0.1}, kappa{0.0125}, Va{1.0}, gamma{1.5};
+
+>>>>>>> wf/grandPotential
 const unsigned int n_phases = 4;
 const unsigned int n_components = 2;
 std::vector<scalarvalueType> eta_values(n_phases);
