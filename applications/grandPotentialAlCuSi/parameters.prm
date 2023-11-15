@@ -10,7 +10,7 @@ set Number of dimensions = 2
 # Each axes spans from zero to the specified length
 set Domain size X = 10
 set Domain size Y = 10
-set Domain size Z = 300
+#set Domain size Z = 300
 
 # =================================================================================
 # Set the element parameters
@@ -20,9 +20,9 @@ set Domain size Z = 300
 # For optimal performance, use refineFactor primarily to determine the element size
 set Subdivisions X = 1
 set Subdivisions Y = 1
-set Subdivisions Z = 3
+#set Subdivisions Z = 3
 
-set Refine factor = 6
+set Refine factor = 7
 
 # Set the polynomial degree of the element (allowed values: 1, 2, or 3)
 set Element degree = 1
@@ -57,7 +57,7 @@ set Steps between remeshing operations = 250
 # Set the time step parameters
 # =================================================================================
 # The size of the time step
-set Time step = 0.0005
+set Time step = 0.00005
 
 # The simulation ends when either the number of time steps is reached or the
 # simulation time is reached.

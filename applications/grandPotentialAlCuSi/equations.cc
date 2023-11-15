@@ -94,12 +94,6 @@ std::vector<scalarvalueType> dndt_values(n_phases);
 std::vector<scalarvalueType> mu_values(n_components);
 std::vector<scalargradType> mu_gradients(n_components);
 
-const std::vector<std::vector<double>> kWell
-    {{0.8,0.8},{2.0,1.0},{2.0,2.0},{50.0,50.0}};
-const std::vector<std::vector<double>> cmin
-    {{0.1,0.15},{0.03,0.03},{0.33,0.0},{0.0,1.0}};
-const double Va{1.0}, M{1.0};
-
 for (unsigned int i=0; i<n_phases; ++i){
 	eta_values[i] = variable_list.get_scalar_value(i);
 	dndt_values[i] = variable_list.get_scalar_value(i+n_phases+n_components);
@@ -108,7 +102,7 @@ for (unsigned int i=0; i<n_components; ++i){
 	mu_values[i] = variable_list.get_scalar_value(i+n_phases);
 	mu_gradients[i] = variable_list.get_scalar_gradient(i+n_phases);
 }
-scalarvalueType h_denom;
+scalarvalueType h_denom = 0.0;
 for (unsigned int i=0; i<n_phases; ++i){
 	h_denom += eta_values[i]*eta_values[i];
 }
@@ -119,10 +113,10 @@ std::vector<std::vector<scalarvalueType>>
 for (unsigned int i=0; i<n_phases; ++i){
     h[i] = eta_values[i]*eta_values[i]/h_denom;
     for (unsigned int j=0; j<n_phases; ++j){
+        dhdn[i][j] = -2.0*eta_values[i]*eta_values[i]*eta_values[j]/(h_denom*h_denom);
         if(i == j){
             dhdn[i][j] += 2.0*eta_values[i]/h_denom;
         }
-        dhdn[i][j] -= 2.0*eta_values[i]*eta_values[i]*eta_values[j]/(h_denom*h_denom);
     }
 }
 
@@ -130,11 +124,12 @@ std::vector<scalarvalueType> dmudtValue(n_components);
 std::vector<scalargradType> dmudtGrad(n_components);
 
 for (unsigned int i=0; i<n_components; ++i){
-    scalarvalueType susceptibility;
+    scalarvalueType susceptibility = 0.0;
     for (unsigned int j=0; j<n_phases; ++j){
         susceptibility += h[j]/(Va*Va*kWell[j][i]);
     }
-    dmudtGrad[i] -= M*mu_gradients[i]/susceptibility;
+    dmudtGrad[i] = -M*mu_gradients[i]/susceptibility;
+    dmudtValue[i] = 0.0;
     for (unsigned int j=0; j<n_phases; ++j){
         for (unsigned int k=0; k<n_phases; ++k){
             scalarvalueType drhodn = dhdn[k][j]*(mu_values[i]/(Va*kWell[k][i]) + constV(cmin[k][i]));
@@ -143,16 +138,14 @@ for (unsigned int i=0; i<n_components; ++i){
     }
 }
 
-
 for (unsigned int i=0; i<n_phases; ++i){
     variable_list.set_scalar_value_term_RHS(i,eta_values[i] +
-        dndt_values[i]*constV(userInputs.dtValue));
+        dndt_values[i]*userInputs.dtValue);
 }
 for (unsigned int i=0; i<n_components; ++i){
-    dmudtValue[i] = mu_values[i] + dmudtValue[i]*constV(userInputs.dtValue);
-    dmudtGrad[i] = dmudtGrad[i]*constV(userInputs.dtValue);
-    variable_list.set_scalar_value_term_RHS(i+n_phases,dmudtValue[i]);
-    variable_list.set_scalar_gradient_term_RHS(i+n_phases,dmudtGrad[i]);
+    variable_list.set_scalar_value_term_RHS(i+n_phases,mu_values[i] +
+        dmudtValue[i]*userInputs.dtValue);
+    variable_list.set_scalar_gradient_term_RHS(i+n_phases,dmudtGrad[i]*userInputs.dtValue);
 }
 }
 
@@ -172,13 +165,6 @@ template <int dim, int degree>
 void customPDE<dim,degree>::nonExplicitEquationRHS(variableContainer<dim,degree,dealii::VectorizedArray<double> > & variable_list,
 				 dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
 
-const std::vector<std::vector<double>> kWell
-    {{0.8,0.8,0.8},{1.0,2.0,1.0},{2.0,2.0,2.0},{50.0,50.0,50.0}};
-const std::vector<std::vector<double>> cmin
-    {{0.75,0.1,0.15},{0.94,0.03,0.03},{0.67,0.33,0.0},{0.0,0.0,1.0}};
-const std::vector<double> fWell{1.0,0.0,0.0,0.0};
-const double L{1.0}, mWell{0.1}, kappa{0.0125}, Va{1.0}, gamma{1.5};
-
 const unsigned int n_phases = 4;
 const unsigned int n_components = 2;
 std::vector<scalarvalueType> eta_values(n_phases);
@@ -194,15 +180,15 @@ for (unsigned int i=0; i<n_components; ++i){
 	mu_values[i] = variable_list.get_scalar_value(i+n_phases);
 }
 
-scalarvalueType h_denom;
 std::vector<scalarvalueType> omegaC(n_phases);
+scalarvalueType h_denom = 0.0;
 
 for (unsigned int i=0; i<n_phases; ++i){
     h_denom += eta_values[i]*eta_values[i];
-    omegaC[i] += constV(fWell[i]);
+    omegaC[i] = fWell[i];
     for (unsigned int j=0; j<n_components; ++j){
         omegaC[i] += -0.5*mu_values[j]*mu_values[j]/constV(Va*Va*kWell[i][j])
-            + mu_values[j]*constV(cmin[i][j]/Va);
+            + mu_values[j]*cmin[i][j]/Va;
     }
 }
 
@@ -210,8 +196,8 @@ std::vector<scalarvalueType> dndtValue(n_phases);
 std::vector<scalargradType> dndtGrad(n_phases);
 
 for (unsigned int i=0; i < n_phases; ++i){
-    dndtValue[i] += mWell*(eta_values[i]*eta_values[i]*eta_values[i] - eta_values[i]);
-    dndtGrad[i] += kappa*eta_gradients[i];
+    dndtValue[i] = mWell*(eta_values[i]*eta_values[i]*eta_values[i] - eta_values[i]);
+    dndtGrad[i] = kappa*eta_gradients[i];
     for (unsigned int j=0; j<n_phases; ++j){
         if(i != j){
             dndtValue[i] += mWell*2.0*eta_values[i]*gamma*eta_values[j]*eta_values[j];

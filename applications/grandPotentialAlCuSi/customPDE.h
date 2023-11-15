@@ -66,9 +66,9 @@ private:
             {{0.8,0.8,0.8},{1.0,2.0,1.0},{2.0,2.0,2.0},{50.0,50.0,50.0}};
         const std::vector<std::vector<double>> cmin
             {{0.75,0.1,0.15},{0.94,0.03,0.03},{0.67,0.33,0.0},{0.0,0.0,1.0}};
-        const std::vector<double> fWell{1.0,0.0,0.0,0.0};
-        const double L{1.0}, mWell{0.1}, kappa{0.0125}, Va{1.0}, gamma{1.5};
-        const double M{1.0};
+        const std::vector<double> fWell{0.0,0.0,0.0,0.0};
+        const double L{1.0}, mWell{1.0}, kappa{0.125}, Va{1.0}, gamma{1.5};
+        const double M{10.0};
 
 
         //Declaring random number generator (Type std::mt19937_64)
