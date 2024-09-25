@@ -22,13 +22,16 @@ double r=0.0;
   }
   if (index == 1)
     {
-      int Nx = 2*userInputs.subdivisions[0];
-      int Ny = 2*userInputs.subdivisions[1];
-      int Nz = userInputs.subdivisions[2];
+      int Nx = userInputs.subdivisions[0]*std::pow(2,userInputs.refine_factor);
+      int Ny = userInputs.subdivisions[1]*std::pow(2,userInputs.refine_factor);
+      int Nz = userInputs.subdivisions[2]*std::pow(2,userInputs.refine_factor);
 
+      double dNdx = userInputs.subdivisions[0]*std::pow(2,userInputs.refine_factor)/userInputs.domain_size[0];
+      double dNdy = userInputs.subdivisions[1]*std::pow(2,userInputs.refine_factor)/userInputs.domain_size[1];
+      double dNdz = userInputs.subdivisions[2]*std::pow(2,userInputs.refine_factor)/userInputs.domain_size[2];
 
       // Convert cartesion point into flattened array index
-      int index = int(p[0] + (Ny + 1) * p[1] + (Ny + 1) * (Nz + 1) * p[2]);
+      int index = int(p[0]*dNdx-1e-10) + (Ny + 1) * int(p[1]*dNdy-1e-10) + (Ny + 1) * (Nz + 1) * int(p[2]*dNdz-1e-10);
 
       // Extract the grain ID from the data array
       double data_value = data[index];
