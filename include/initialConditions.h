@@ -17,17 +17,20 @@ class InitialCondition : public dealii::Function<dim>
 public:
   const unsigned int             index;
   const userInputParameters<dim> userInputs;
+  std::vector<double>            data;
   dealii::Vector<double>         values;
 
   InitialCondition(const unsigned int             _index,
                    const userInputParameters<dim> _userInputs,
-                   MatrixFreePDE<dim, degree>    *_matrix_free_pde)
+                   MatrixFreePDE<dim, degree>    *_matrix_free_pde,
+                   const std::vector<double> _data = std::vector<double>())
     : dealii::Function<dim>(1)
     , index(_index)
     , userInputs(_userInputs)
     , matrix_free_pde(_matrix_free_pde)
   {
     std::srand(dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) + 1);
+    data = _data;
   }
 
   // IC for scalar values
@@ -37,7 +40,7 @@ public:
     double                 scalar_IC = 0.0;
     dealii::Vector<double> vector_IC(dim);
 
-    matrix_free_pde->setInitialCondition(p, index, scalar_IC, vector_IC);
+    matrix_free_pde->setInitialCondition(p, index, scalar_IC, vector_IC, data);
     return scalar_IC;
   };
 

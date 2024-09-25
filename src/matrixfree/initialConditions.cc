@@ -38,11 +38,50 @@ public:
   }
 };
 
+
+
+template <int dim, int degree>
+std::vector<double>
+MatrixFreePDE<dim, degree>::read_binary_data(const std::string         &filename,
+                                             const std::vector<unsigned int> &subdivisions)
+{
+  // Begin section for binary read in
+  std::vector<double> data;
+  // std::string         filename = userInputs.grain_structure_filename;
+  std::string binary_file = filename + ".dat";
+  std::cout << "Reading " << binary_file << " file..." << std::endl;
+  std::ifstream dataFile(binary_file, std::ios::in | std::ios::binary);
+  double        dbuf;
+  char          buf[8];
+  unsigned long bindata_totsize =
+    (subdivisions[0] + 1) * (subdivisions[1] + 1) * (subdivisions[2] + 1);
+  data.reserve(bindata_totsize);
+
+  // Read the .dat file
+  for (unsigned long i = 0; i < bindata_totsize; i++)
+    {
+      dataFile.read(buf, 8);
+      memcpy(&dbuf, &buf, sizeof data[0]);
+      data.push_back(dbuf);
+    }
+  dataFile.close();
+
+  std::cout << "Done." << std::endl;
+
+  return data;
+  // End section for binary read in
+}
+
+
 // methods to apply initial conditions
 template <int dim, int degree>
 void
 MatrixFreePDE<dim, degree>::applyInitialConditions()
 {
+
+  std::vector<double> data =
+    read_binary_data("phi_init", userInputs.subdivisions);
+
   if (userInputs.load_grain_structure)
     {
       // Create the dummy field
@@ -358,15 +397,15 @@ MatrixFreePDE<dim, degree>::applyInitialConditions()
                 }
 
               // Load the data from the file using a PField
-              body.read_vtk(filename);
-              ScalarField &conc =
-                body.find_scalar_field(userInputs.load_field_name[var_index]);
+              //body.read_vtk(filename);
+              //ScalarField &conc =
+              //  body.find_scalar_field(userInputs.load_field_name[var_index]);
 
               if (userInputs.var_type[var_index] == SCALAR)
                 {
                   pcout << "Applying PField initial condition...\n";
                   VectorTools::interpolate(*dofHandlersSet[var_index],
-                                           InitialConditionPField<dim>(var_index, conc),
+                                           InitialCondition<dim, degree>(var_index, userInputs, this, data),
                                            *solutionSet[var_index]);
                 }
               else
