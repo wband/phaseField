@@ -18,7 +18,7 @@ PRISMS_PF_BEGIN_NAMESPACE
 
 template <unsigned int dim, unsigned int degree, typename number>
 void
-customPDE<dim, degree, number>::set_initial_condition(
+CustomPDE<dim, degree, number>::set_initial_condition(
   [[maybe_unused]] const unsigned int       &index,
   [[maybe_unused]] const unsigned int       &component,
   [[maybe_unused]] const dealii::Point<dim> &point,
@@ -26,7 +26,7 @@ customPDE<dim, degree, number>::set_initial_condition(
   [[maybe_unused]] double                   &vector_component_value) const
 {
   double int_width = 2.0;
-  double y0 = this->get_user_inputs().spatial_discretization.size[1]/2.0;
+  double y0 = this->get_user_inputs().get_spatial_discretization().get_size()[1]/2.0;
   double prof = 0.5*(1.0+std::tanh(-(point[1]-y0)/(int_width/2.0)));
   if(index == 0)
   {
@@ -41,7 +41,7 @@ customPDE<dim, degree, number>::set_initial_condition(
 
 template <unsigned int dim, unsigned int degree, typename number>
 void
-customPDE<dim, degree, number>::set_nonuniform_dirichlet(
+CustomPDE<dim, degree, number>::set_nonuniform_dirichlet(
   [[maybe_unused]] const unsigned int       &index,
   [[maybe_unused]] const unsigned int       &boundary_id,
   [[maybe_unused]] const unsigned int       &component,
@@ -50,6 +50,6 @@ customPDE<dim, degree, number>::set_nonuniform_dirichlet(
   [[maybe_unused]] number                   &vector_component_value) const
 {}
 
-INSTANTIATE_TRI_TEMPLATE(customPDE)
+INSTANTIATE_TRI_TEMPLATE(CustomPDE)
 
 PRISMS_PF_END_NAMESPACE

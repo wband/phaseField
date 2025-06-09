@@ -2,7 +2,7 @@ set dim = 2
 set global refinement = 6
 set degree = 1
 
-subsection rectangular mesh
+subsection Rectangular mesh
     set x size = 50
     set y size = 50
     set z size = 50
@@ -11,18 +11,18 @@ subsection rectangular mesh
     set z subdivisions = 1
 end
 
-set boundary condition for phie = NATURAL,NATURAL,NATURAL,DIRICHLET:0.5
-set boundary condition for psi = NATURAL
+set boundary condition for phie = Natural,Natural,Natural,Dirichlet:0.5
+set boundary condition for psi = Natural
 
 
 set time step = 1.0e-2
 
 subsection linear solver parameters: phie
-     set tolerance type = ABSOLUTE_RESIDUAL
+     set tolerance type = AbsoluteResidual
      set tolerance value = 1e-6
           set max iterations = 100000
-     set preconditioner type = NONE
+     set preconditioner type = None
 end
 
-set Model constant McV = 1.0, DOUBLE
-set Model constant KcV = 1.0, DOUBLE
+set Model constant McV = 1.0, Double
+set Model constant KcV = 1.0, Double
