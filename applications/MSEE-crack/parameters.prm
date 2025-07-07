@@ -1,0 +1,37 @@
+set dim = 2
+set global refinement = 7
+set degree = 1
+
+subsection Rectangular mesh
+  set x size = 0.1
+  set y size = 0.4
+  set z size = 0.1
+  set x subdivisions = 1
+  set y subdivisions = 4  
+  set z subdivisions = 1
+end
+
+subsection linear solver parameters: u
+    set tolerance type = AbsoluteResidual
+    set tolerance value = 1e-10
+    set max iterations = 1000
+    set preconditioner type = GMG
+    set smoothing range = 20
+    set smoother degree = 5
+    set eigenvalue cg iterations = 20
+    set min mg level = 0
+end
+
+
+#set boundary condition for Ex = Natural
+#set boundary condition for eigx = Natural
+
+set boundary condition for u, x component = Natural, Natural, Dirichlet: 0.0, Natural
+set boundary condition for u, y component = Natural, Natural, Dirichlet: 0.0, Natural
+
+#set boundary condition for u, z component = Natural, Dirichlet: 0.0, Natural, Dirichlet: 0.0, Dirichlet: 0.0, Dirichlet: 0.0
+
+set Model constant stiffness = (2e5, 0.3), isotropic elastic constants
+set Model constant ell = 3.75e-3, double
+set Model constant n_init = 1e-2, double
+
