@@ -11,18 +11,7 @@ subsection Rectangular mesh
   set z subdivisions = 1
 end
 
-subsection linear solver parameters: u
-    set tolerance type = AbsoluteResidual
-    set tolerance value = 1e-10
-    set max iterations = 10000
-    set preconditioner type = GMG
-    set smoothing range = 20
-    set smoother degree = 5
-    set eigenvalue cg iterations = 20
-    set min mg level = 0
-end
-
-#subsection linear solver parameters: c
+#subsection linear solver parameters: c_new
 #    set tolerance type = AbsoluteResidual
 #    set tolerance value = 1e-10
 #    set max iterations = 10000
@@ -33,10 +22,10 @@ end
 #    set min mg level = 0
 #end
 
-subsection linear solver parameters: c
+subsection linear solver parameters: c_new
   set tolerance type = AbsoluteResidual
   set tolerance value = 1e-12
-  set max iterations = 10000
+  set max iterations = 1000
   set preconditioner type = None
 end
 
@@ -48,10 +37,12 @@ subsection output
 end
 
 #set boundary condition for n = Natural
-set boundary condition for c = Natural, Dirichlet: 0.0, Natural, Natural
+set boundary condition for c_new = Natural, Dirichlet: 0.0, Natural, Natural
+set boundary condition for c_old1 = Natural, Dirichlet: 0.0, Natural, Natural
+set boundary condition for c_old2 = Natural, Dirichlet: 0.0, Natural, Natural
 
-set boundary condition for u, x component = Natural, Dirichlet: 0.0, Natural, Natural
-set boundary condition for u, y component = Natural, Dirichlet: 0.0, Natural, Natural
+#set boundary condition for u, x component = Natural, Dirichlet: 0.0, Natural, Natural
+#set boundary condition for u, y component = Natural, Dirichlet: 0.0, Natural, Natural
 
 #set boundary condition for u, z component = Natural, Dirichlet: 0.0, Natural, Dirichlet: 0.0, Dirichlet: 0.0, Dirichlet: 0.0
 

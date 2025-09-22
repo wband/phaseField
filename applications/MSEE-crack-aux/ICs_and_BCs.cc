@@ -23,31 +23,23 @@ CustomPDE<dim, degree, number>::set_initial_condition(
   [[maybe_unused]] number                   &scalar_value,
   [[maybe_unused]] number                   &vector_component_value) const
 {
-      const number ylength = this->get_user_inputs().get_spatial_discretization().get_size()[1];
-      number posx   = point[0];
-      number posy   = point[1];
-      number channel_width = ylength/4;
-      if(index == 2)
+  const number ylength = this->get_user_inputs().get_spatial_discretization().get_size()[1];
+  number posx   = point[0];
+  number posy   = point[1];
+  number channel_width = ylength/4;
+  scalar_value = 0.0;
+  if(index == 3)
+    {
+      if (posx < channel_depth)
         {
-          if (posx < channel_depth)
-            {
-              scalar_value = 0.5 * (1 + tanh((abs(posy - ylength/2) - channel_width/2)/ell));
-            }
-          else 
-            {
-              number dist = sqrt((posx - channel_depth)*(posx - channel_depth) + (posy - ylength/2)*(posy - ylength/2));
-              scalar_value = 0.5 * (1 + tanh((dist - channel_width/2)/ell));
-            }
-          scalar_value = std::max<number>(scalar_value, 1e-6);
+          scalar_value = 0.5 * (1.0 + tanh((abs(posy - ylength/2.0) - channel_width/2)/ell));
         }
-
-  if (index ==1)
-    {
-      vector_component_value = 0.0;
-    }
-  if (index == 0)
-    {
-      scalar_value = c_init;
+      else 
+        {
+          number dist = sqrt((posx - channel_depth)*(posx - channel_depth) + (posy - ylength/2.0)*(posy - ylength/2.0));
+          scalar_value = 0.5 * (1.0 + tanh((dist - channel_width/2.0)/ell));
+        }
+      scalar_value = std::max<number>(scalar_value, 1e-6);
     }
 }
 

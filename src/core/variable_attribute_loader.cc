@@ -494,7 +494,7 @@ VariableAttributeLoader::validate_old_solution_dependencies()
       // Find first gap in sequence
       unsigned int gap_index = 0;
       while (gap_index < old_types.size() &&
-             dependency_set.contains(std::make_pair(gap_index, old_types[gap_index])))
+             dependency_set.contains(std::make_pair(index, old_types[gap_index])))
         {
           gap_index++;
         }
