@@ -108,7 +108,6 @@ $(document).ready(function(){initNavTree('classVariableAttributeLoader.html','')
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classVariableAttributeLoader-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">VariableAttributeLoader Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
@@ -152,9 +151,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>init_variable_attribu
 <tr class="memitem:a5a2b54ccc2b012fca367d4225e1eb720" id="r_a5a2b54ccc2b012fca367d4225e1eb720"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned int, <a class="el" href="structVariableAttributes.html">VariableAttributes</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVariableAttributeLoader.html#a5a2b54ccc2b012fca367d4225e1eb720">get_var_attributes</a> () const</td></tr>
 <tr class="memdesc:a5a2b54ccc2b012fca367d4225e1eb720"><td class="mdescLeft">&#160;</td><td class="mdescRight">getter function for variable attributes list (copy).  <br /></td></tr>
 <tr class="separator:a5a2b54ccc2b012fca367d4225e1eb720"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
-Protected Member Functions</h2></td></tr>
 <tr class="memitem:aaec3896d284f17c75452f5306f1f06d8" id="r_aaec3896d284f17c75452f5306f1f06d8"><td class="memItemLeft" align="right" valign="top"><a id="aaec3896d284f17c75452f5306f1f06d8" name="aaec3896d284f17c75452f5306f1f06d8"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>load_variable_attributes</b> ()=0</td></tr>
 <tr class="memdesc:aaec3896d284f17c75452f5306f1f06d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">User-implemented method where the variable attributes are set for all fields. <br /></td></tr>
@@ -171,6 +167,10 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>load_variable
 <tr class="memitem:a5c554f8b1925ad0653d2fdec00b07b7b" id="r_a5c554f8b1925ad0653d2fdec00b07b7b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVariableAttributeLoader.html#a5c554f8b1925ad0653d2fdec00b07b7b">set_is_postprocessed_field</a> (const unsigned int &amp;index, const bool &amp;is_postprocess)</td></tr>
 <tr class="memdesc:a5c554f8b1925ad0653d2fdec00b07b7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the whether the field is a postprocessed field.  <br /></td></tr>
 <tr class="separator:a5c554f8b1925ad0653d2fdec00b07b7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fc415d7a7b621ab95f8e2378c509c9b" id="r_a1fc415d7a7b621ab95f8e2378c509c9b"><td class="memTemplParams" colspan="2">template&lt;typename Iterable &gt; </td></tr>
+<tr class="memitem:a1fc415d7a7b621ab95f8e2378c509c9b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classVariableAttributeLoader.html#a1fc415d7a7b621ab95f8e2378c509c9b">set_is_nucleation_rate</a> (const unsigned int &amp;index, const bool &amp;is_nucleation, const Iterable &amp;nucleating_fields)</td></tr>
+<tr class="memdesc:a1fc415d7a7b621ab95f8e2378c509c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set whether the field is a nucleation rate.  <br /></td></tr>
+<tr class="separator:a1fc415d7a7b621ab95f8e2378c509c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac25ceb35f589943b2d9cca5a756187d" id="r_aac25ceb35f589943b2d9cca5a756187d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVariableAttributeLoader.html#aac25ceb35f589943b2d9cca5a756187d">set_solve_block</a> (const unsigned int &amp;index, const Types::Index &amp;solve_block)</td></tr>
 <tr class="memdesc:aac25ceb35f589943b2d9cca5a756187d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the solve block of the field.  <br /></td></tr>
 <tr class="separator:aac25ceb35f589943b2d9cca5a756187d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -233,9 +233,6 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>load_variable
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Iterable &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::insert_dependencies_gradient_term_lhs </td>
@@ -255,11 +252,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Insert dependencies for the gradient term of the LHS equation of the variable at <code>index</code>. </p>
@@ -280,9 +272,6 @@ template&lt;typename Iterable &gt; </div>
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Iterable &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::insert_dependencies_gradient_term_rhs </td>
@@ -302,11 +291,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Insert dependencies for the gradient term of the RHS equation of the variable at <code>index</code>. </p>
@@ -327,9 +311,6 @@ template&lt;typename Iterable &gt; </div>
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Iterable &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::insert_dependencies_value_term_lhs </td>
@@ -349,11 +330,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Insert dependencies for the value term of the LHS equation of the variable at <code>index</code>. </p>
@@ -374,9 +350,6 @@ template&lt;typename Iterable &gt; </div>
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename Iterable &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::insert_dependencies_value_term_rhs </td>
@@ -396,11 +369,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Insert dependencies for the value term of the RHS equation of the variable at <code>index</code>. </p>
@@ -419,9 +387,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_dependencies_gradient_term_lhs </td>
@@ -441,11 +406,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Add dependencies for the gradient term of the LHS equation of the variable at <code>index</code>. </p>
@@ -464,9 +424,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_dependencies_gradient_term_rhs </td>
@@ -486,11 +443,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Add dependencies for the gradient term of the RHS equation of the variable at <code>index</code>. </p>
@@ -509,9 +461,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_dependencies_value_term_lhs </td>
@@ -531,11 +480,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Add dependencies for the value term of the LHS equation of the variable at <code>index</code>. </p>
@@ -554,9 +498,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_dependencies_value_term_rhs </td>
@@ -576,11 +517,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Add dependencies for the value term of the RHS equation of the variable at <code>index</code>. </p>
@@ -594,14 +530,56 @@ template&lt;typename Iterable &gt; </div>
 
 </div>
 </div>
+<a id="a1fc415d7a7b621ab95f8e2378c509c9b" name="a1fc415d7a7b621ab95f8e2378c509c9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fc415d7a7b621ab95f8e2378c509c9b">&#9670;&#160;</a></span>set_is_nucleation_rate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Iterable &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void VariableAttributeLoader::set_is_nucleation_rate </td>
+          <td>(</td>
+          <td class="paramtype">const unsigned int &amp;&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool &amp;&#160;</td>
+          <td class="paramname"><em>is_nucleation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Iterable &amp;&#160;</td>
+          <td class="paramname"><em>nucleating_fields</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set whether the field is a nucleation rate. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Index of variable </td></tr>
+    <tr><td class="paramname">is_nucleation</td><td>Whether the field is a nucleation rate. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a5c554f8b1925ad0653d2fdec00b07b7b" name="a5c554f8b1925ad0653d2fdec00b07b7b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5c554f8b1925ad0653d2fdec00b07b7b">&#9670;&#160;</a></span>set_is_postprocessed_field()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_is_postprocessed_field </td>
@@ -621,11 +599,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Set the whether the field is a postprocessed field. </p>
@@ -644,9 +617,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_solve_block </td>
@@ -666,11 +636,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Set the solve block of the field. </p>
@@ -689,9 +654,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_variable_equation_type </td>
@@ -711,11 +673,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Set the PDE type of the variable at <code>index</code> to <code>pde_type</code> where <code>pde_type</code>can be <code>ExplicitTimeDependent</code>, <code>ImplicitTimeDependent</code>, <code>TimeIndependent</code>, <code>Auxiliary</code>. </p>
@@ -734,9 +691,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_variable_name </td>
@@ -756,11 +710,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Set the name of the variable at <code>index</code> to <code>name</code>. </p>
@@ -779,9 +728,6 @@ template&lt;typename Iterable &gt; </div>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void VariableAttributeLoader::set_variable_type </td>
@@ -801,11 +747,6 @@ template&lt;typename Iterable &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Set the field type of the variable at <code>index</code> to <code>field_type</code> where <code>field_type</code> can be <code>Scalar</code> or <code>Vector</code>. </p>

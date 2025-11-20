@@ -33,6 +33,9 @@ var NAVTREE =
     [ "Tutorial", "tutorial.html", null ],
     [ "Applications", "applications.html", null ],
     [ "Contact", "contact.html", null ],
+    [ "Namespaces", "namespaces.html", [
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -55,9 +58,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classMatrixFreeOperator.html#a66ea902605dd0b5f388e1c1b11e884fc",
-"classTriangulationHandler.html#a964b79030881a41fbe1e314561752c66",
-"structNonlinearSolveParameterSet.html#ad566deaef73bc70f84358b84a09207ed"
+"classMatrixFreeHandler.html#afc3e36bb3c6d842e27c093eb729f6f79",
+"classTriangulationHandler.html#a31e8d9d80fbc855ad93afb054b038b09",
+"structLinearSolveParameters.html#ab17d374849a9c2d5596de791fd8b25fb"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
