@@ -92,10 +92,12 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
             variable_list.template get_value<ScalarGrad>(5),
             variable_list.template get_value<ScalarGrad>(6),
             variable_list.template get_value<ScalarGrad>(7));
+      VectorGrad eigstrain;
+      eigstrain[0][0] = 0.01;
       VectorGrad ux = variable_list.template get_symmetric_gradient<VectorGrad>(0);
       VectorGrad stress;
-      compute_stress<dim, ScalarValue>(C, ux, stress);
-      variable_list.set_gradient_term(0, -stress);
+      compute_stress<dim, ScalarValue>(C, ux-eigstrain, stress);
+      variable_list.set_gradient_term(0, stress);
     }
 }
 
@@ -122,7 +124,7 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_lhs(
       VectorGrad change_ux = variable_list.template get_symmetric_gradient<VectorGrad>(0,Change);
       VectorGrad stress;
       compute_stress<dim, ScalarValue>(C, change_ux, stress);
-      variable_list.set_gradient_term(0, stress, Change);
+      variable_list.set_gradient_term(0, -stress, Change);
     }
 }
 
@@ -145,7 +147,9 @@ CustomPDE<dim, degree, number>::compute_postprocess_explicit_rhs(
           variable_list.template get_value<ScalarGrad>(7));
     VectorGrad ux = variable_list.template get_symmetric_gradient<VectorGrad>(0);
     VectorGrad stress;
-    compute_stress<dim, ScalarValue>(C, ux, stress);
+    VectorGrad eigstrain;
+    eigstrain[0][0] = 0.01;
+    compute_stress<dim, ScalarValue>(C, ux-eigstrain, stress);
     ScalarGrad stress_diag;
     ScalarGrad stress_offdiag;
     for (unsigned int i = 0; i < dim; ++i)
