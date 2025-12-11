@@ -13,6 +13,10 @@
 
 PRISMS_PF_BEGIN_NAMESPACE
 template <typename T, unsigned int dim> 
+dealii::Tensor<2, dim, T>
+get_eigenstrain(const unsigned int index);
+
+template <typename T, unsigned int dim> 
 dealii::Tensor<2, voigt_tensor_size<dim>, T>
 form_Cij(const dealii::Tensor<1, dim, T> &Cv1,
         const dealii::Tensor<1, dim, T> &Cv2,
@@ -59,7 +63,11 @@ CustomAttributeLoader::load_variable_attributes()
   set_variable_equation_type(10, ExplicitTimeDependent);
   set_dependencies_value_term_rhs(10, std::string("grad(u)")+c_vec_string);
   set_is_postprocessed_field(10, true);
-  
+
+  set_variable_name(11, "dummy"); 
+  set_variable_type(11, Scalar);
+  set_variable_equation_type(11, ExplicitTimeDependent);
+  set_dependencies_value_term_rhs(11, "");
 }
 
 template <unsigned int dim, unsigned int degree, typename number>
@@ -92,8 +100,8 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
             variable_list.template get_value<ScalarGrad>(5),
             variable_list.template get_value<ScalarGrad>(6),
             variable_list.template get_value<ScalarGrad>(7));
-      VectorGrad eigstrain;
-      eigstrain[0][0] = 0.01;
+      VectorGrad eigstrain = get_eigenstrain<ScalarValue,dim>(
+          get_user_inputs().get_temporal_discretization().get_increment());
       VectorGrad ux = variable_list.template get_symmetric_gradient<VectorGrad>(0);
       VectorGrad stress;
       compute_stress<dim, ScalarValue>(C, ux-eigstrain, stress);
@@ -147,8 +155,8 @@ CustomPDE<dim, degree, number>::compute_postprocess_explicit_rhs(
           variable_list.template get_value<ScalarGrad>(7));
     VectorGrad ux = variable_list.template get_symmetric_gradient<VectorGrad>(0);
     VectorGrad stress;
-    VectorGrad eigstrain;
-    eigstrain[0][0] = 0.01;
+    VectorGrad eigstrain = get_eigenstrain<ScalarValue,dim>(
+          get_user_inputs().get_temporal_discretization().get_increment());
     compute_stress<dim, ScalarValue>(C, ux-eigstrain, stress);
     ScalarGrad stress_diag;
     ScalarGrad stress_offdiag;
@@ -236,6 +244,47 @@ form_Cij(const dealii::Tensor<1, dim, T> &Cv1,
         C[5][4] = Cv7[2];
         return C;
     }
+}
+
+template <typename T, unsigned int dim> 
+dealii::Tensor<2, dim, T>
+get_eigenstrain(const unsigned int index)
+{
+  dealii::Tensor<2, dim, T> eigstrain;
+  if constexpr (dim != 3)
+    {
+      throw("This function is designed for 3-D eigenstrains only.");
+    }
+  if constexpr (dim == 3)
+    {
+      switch (index)
+        {
+          case 0:
+            eigstrain[0][0] = 0.01;
+            break;
+          case 1:
+            eigstrain[1][1] = 0.01;
+            break;
+          case 2:
+            eigstrain[2][2] = 0.01;
+            break;
+          case 3:
+            eigstrain[0][1] = 0.005;
+            eigstrain[1][0] = 0.005;
+            break;
+          case 4:
+            eigstrain[0][2] = 0.005;
+            eigstrain[2][0] = 0.005;
+            break;
+          case 5:
+            eigstrain[1][2] = 0.005;
+            eigstrain[2][1] = 0.005;
+            break;
+          default:
+            throw("Invalid eigenstrain index.");
+        }
+    }
+  return eigstrain;
 }
 
 #include "custom_pde.inst"

@@ -11,9 +11,24 @@ subsection Rectangular mesh
   set z subdivisions = 1
 end
 
+# The timestep
+set time step = 6.0e-4
+
+# The total number of timesteps to take
+set number steps = 5
+
+# The number of ouputs and the frequency at which they output. The potential options
+# for the type of output are: EQUAL_SPACING, LOG_SPACING, and N_PER_DECADE. 
+subsection output
+  set condition = EQUAL_SPACING
+  set number = 5
+end
+
+
 set boundary condition for u, x component = Periodic
 set boundary condition for u, y component = Periodic
 set boundary condition for u, z component = Periodic
+set boundary condition for dummy = Natural
 
 subsection linear solver parameters: u
   set tolerance type = AbsoluteResidual
