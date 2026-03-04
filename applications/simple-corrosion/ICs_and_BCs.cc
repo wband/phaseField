@@ -37,6 +37,8 @@ CustomPDE<dim, degree, number>::set_initial_condition(
     {
       double x = domain_size[0]*0.5 - point[0];
       scalar_value = 0.5 * (1.0 + sin(pi * max(-0.5, min(0.5, std::sqrt(2.0) * x /l_int))));
+      scalar_value = max(scalar_value, number(1e-5));
+      scalar_value = min(scalar_value, number(1.0-1e-5));
     }
   else if (index == 1)
     {

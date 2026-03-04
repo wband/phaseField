@@ -11,51 +11,6 @@
 
 PRISMS_PF_BEGIN_NAMESPACE
 
-template <typename number, typename dtType>
-void
-constrain_rxn_x1(const number &val, const number n, const dtType dt, number &rxn, const double &epsilon_denom)
-{
-  using std::max;
-  using std::min;
-  double epsilon = 1e-8;
-  number top_lim = 1.0 - epsilon;
-  number bot_lim = 0.0 + epsilon;
-  number test = val + rxn * dt/(n + epsilon_denom);
-  number remainder_top = max(test - top_lim, number(0.0));
-  number remainder_bot = min(test + bot_lim, number(0.0));
-  rxn  = (rxn * dt/(n + epsilon_denom)- remainder_top - remainder_bot) * (n + epsilon_denom) / dt;
-}
-
-template <typename number, typename dtType>
-void
-constrain_rxn_x2(const number &val, const number n, const dtType dt, number &rxn, const double &epsilon_denom)
-{
-  using std::max;
-  using std::min;
-  double epsilon = 1e-8;
-  number top_lim = 1.0 - epsilon;
-  number bot_lim = 0.0 + epsilon;
-  number test = val - rxn * dt/(1.0 - n + epsilon_denom);
-  number remainder_top = max(test - top_lim, number(0.0));
-  number remainder_bot = min(test + bot_lim, number(0.0));
-  rxn  = -(-rxn * dt/(1.0 - n + epsilon_denom) - remainder_top - remainder_bot) * (1.0 - n + epsilon_denom) / dt;
-}
-
-template <typename number, typename dtType>
-void
-constrain_rxn_phi(const number &val, const dtType dt, number &rxn)
-{
-  using std::max;
-  using std::min;
-  number top_lim = 1.0;
-  number bot_lim = 0.0;
-  number remainder_top = val + rxn * dt - top_lim;
-  number remainder_bot = val + rxn * dt + bot_lim;
-  remainder_top = max(remainder_top, number(0.0));
-  remainder_bot = min(remainder_bot, number(0.0));
-  rxn  = (rxn * dt - remainder_top - remainder_bot) / dt;
-}
-
 void
 CustomAttributeLoader::load_variable_attributes()
 {
@@ -124,7 +79,6 @@ CustomPDE<dim, degree, number>::compute_explicit_rhs(
       ScalarValue diff1  = variable_list.template get_value<ScalarValue>(4);
       ScalarValue diff2  = variable_list.template get_value<ScalarValue>(5);
       ScalarValue rxn_mu  = variable_list.template get_value<ScalarValue>(6);
-
       variable_list.set_value_term(0, n + dt * rxn);
       variable_list.set_value_term(1, x1 + dt * (diff1 + rxn));
       variable_list.set_value_term(2, x2 + dt * (diff2 - rxn));
@@ -140,6 +94,10 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
   [[maybe_unused]] Types::Index                           solve_block,
   [[maybe_unused]] Types::Index                           index) const
 {
+  using std::max;
+  using std::min;
+  const ScalarValue upper(1.0 - 1e-5);
+  const ScalarValue lower(1e-5);
   if(solve_block == 0)
     {
       ScalarValue n  = variable_list.template get_value<ScalarValue>(0);
@@ -164,18 +122,63 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
     {
       number dt = get_timestep();
       ScalarValue n  = variable_list.template get_value<ScalarValue>(0);
+      ScalarGrad  n_grad = variable_list.template get_gradient<ScalarGrad>(0);
       ScalarValue x1  = variable_list.template get_value<ScalarValue>(1);
       ScalarValue x2  = variable_list.template get_value<ScalarValue>(2);
       ScalarValue diff1  = variable_list.template get_value<ScalarValue>(4);
       ScalarValue diff2  = variable_list.template get_value<ScalarValue>(5);
       ScalarValue rxn_mu  = variable_list.template get_value<ScalarValue>(6);
+      ScalarValue rxn_val = - n_grad.norm_square() * rxn_mu;
+      ScalarValue remainder_upper;
+      ScalarValue remainder_lower;
+      ScalarValue test;
+      ScalarValue rxn_test;
+      // find the excess reaction that would put n, x1, and x2 out of bounds and
+      // solve for the remaining reaction that would be allowed within the bounds
+      // constraining for n
+      test = n + rxn_val * dt;
+      remainder_upper = max(test - upper, ScalarValue(0.0));
+      remainder_lower = min(test - lower, ScalarValue(0.0));
+      // new = n + dt*rxn => rxn = (new - n)/dt
+      // for constrained cases, new = test - remainder, otherwise new = test
+      rxn_val = (rxn_val * dt - remainder_upper - remainder_lower) / dt;
+      // constraining for x1
+      test = x1 + dt * (diff1 + rxn_val);
+      remainder_upper = max(test - upper, ScalarValue(0.0));
+      remainder_lower = min(test - lower, ScalarValue(0.0));
+      // new = x1 + dt*(diff1 + rxn) => rxn = (new - x1 - dt*diff1)/dt
+      rxn_test = (rxn_val * dt - remainder_upper - remainder_lower) / dt;
+      // always using the smaller magnitude reaction (looks weird bc no sign function)
+      rxn_val = max(min(rxn_val,ScalarValue(0.0)),min(rxn_test,ScalarValue(0.0)))
+              + min(max(rxn_val,ScalarValue(0.0)),max(rxn_test,ScalarValue(0.0))); 
+      // constraining for x2
+      test = x2 + dt * (diff2 - rxn_val);
+      remainder_upper = max(test - upper, ScalarValue(0.0));
+      remainder_lower = min(test - lower, ScalarValue(0.0));
+      // new = x2 + dt*(diff2 - rxn) => rxn = -(new - x2 - dt*diff2)/dt
+      rxn_test = -(-rxn_val * dt - remainder_upper - remainder_lower) / dt;
+      rxn_val = max(min(rxn_val,ScalarValue(0.0)),min(rxn_test,ScalarValue(0.0)))
+              + min(max(rxn_val,ScalarValue(0.0)),max(rxn_test,ScalarValue(0.0)));
 
-      ScalarValue rxn_val = -n * (1.0 - n) * rxn_mu;
-      ScalarValue x1_temp = x1 + dt*diff1;
-      ScalarValue x2_temp = x2 + dt*diff2;
-      constrain_rxn_x1(x1_temp, n, dt, rxn_val, epsilon_denom);
-      constrain_rxn_x2(x2_temp, n, dt, rxn_val, epsilon_denom);
-      constrain_rxn_phi(n, dt, rxn_val);
+
+/* readable but not efficient version of constraint logic */
+/*      for (unsigned int i = 0; i < rxn_val.size(); ++i)
+        {
+          if (phi_test[i] > upper) rxn_val[i] = (upper-n[i])/dt;
+          else if (phi_test[i] < lower) rxn_val[i] = (lower-n[i])/dt;
+        }
+      ScalarValue x1_test = x1 + dt * (diff1 + rxn_val);
+      for (unsigned int i = 0; i < rxn_val.size(); ++i)
+        {
+          if (x1_test[i] > upper) rxn_val[i] = (upper-x1[i]-dt*diff1[i])/dt;
+          else if (x1_test[i] < lower) rxn_val[i] = (lower-x1_test[i]-dt*diff1[i])/dt;
+        }
+      ScalarValue x2_test = x2 + dt * (diff2 - rxn_val);
+      for (unsigned int i = 0; i < rxn_val.size(); ++i)
+        {
+          if (x2_test[i] > upper) rxn_val[i] = -(upper-x2[i]-dt*diff2[i])/dt;
+          else if (x2_test[i] < lower) rxn_val[i] = -(lower-x2[i]-dt*diff2[i])/dt;
+        } */
       variable_list.set_value_term(3, rxn_val);
     }
 }

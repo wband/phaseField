@@ -129,15 +129,16 @@ private:
     const dealii::VectorizedArray<number>                     &element_volume,
     Types::Index solve_block) const override;
 
-  number D1 = 1.0;
+  number D1 = 0.1;
   number D2 = 1.0;
-  number deltaG = 0.9;
+  number deltaG = 2.0;
   number alpha = 0.5;
   number k0 = 1.0;
   number l_int = 4.0;
-  number epsilon_denom = 1e-4;
-  number dw_coeff = 4.0/l_int;
-  number grad_coeff = 4.0*l_int/(Kokkos::numbers::pi*Kokkos::numbers::pi);
+  number epsilon_denom = 1e-6;
+  number sigma = 10.0;
+  number dw_coeff = sigma*4.0/l_int;
+  number grad_coeff = sigma*4.0*l_int/(Kokkos::numbers::pi*Kokkos::numbers::pi);
 };
 
 PRISMS_PF_END_NAMESPACE
