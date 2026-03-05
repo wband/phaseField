@@ -2,7 +2,7 @@
 set dim = 2
 
 # The initial global refinement
-set global refinement = 6
+set global refinement = 8
 
 # The element degree
 set degree = 1
@@ -12,17 +12,17 @@ set degree = 1
 # subdivisions to apply to each of those. This is useful when dealing with a domain
 # that is not square.
 subsection Rectangular mesh
-  set x size = 20.0
-  set y size = 10.0
-  set x subdivisions = 2
+  set x size = 80.0
+  set y size = 80.0
+  set x subdivisions = 1
   set y subdivisions = 1
 end
 
 # The timestep
-set time step = 5e-5
+set time step = 5e-4
 
 # The total number of timesteps to take
-set number steps = 1000000
+set number steps = 10000000
 
 # The number of outputs and the frequency at which they output. The potential options
 # for the type of output are: EQUAL_SPACING, LOG_SPACING, and N_PER_DECADE.
@@ -40,10 +40,8 @@ end
 # files.
 set boundary condition for n = Natural
 set boundary condition for x1 = Natural
-set boundary condition for x2 = Natural, Dirichlet: 0.01, Natural, Natural
+set boundary condition for x2 = Natural, Natural, Natural, Dirichlet: 0.05
 set boundary condition for rxn = Natural
-set boundary condition for diff1 = Natural
-set boundary condition for diff2 = Natural
 set boundary condition for rxn_mu = Natural
 
 

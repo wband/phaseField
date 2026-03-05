@@ -131,12 +131,12 @@ private:
 
   number D1 = 0.1;
   number D2 = 1.0;
-  number deltaG = 2.0;
+  number deltaG = 1.0;
   number alpha = 0.5;
   number k0 = 1.0;
   number l_int = 4.0;
-  number epsilon_denom = 1e-6;
-  number sigma = 10.0;
+  number epsilon_denom = 1e-5;
+  number sigma = 2.0;
   number dw_coeff = sigma*4.0/l_int;
   number grad_coeff = sigma*4.0*l_int/(Kokkos::numbers::pi*Kokkos::numbers::pi);
 };

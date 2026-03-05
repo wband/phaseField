@@ -35,10 +35,23 @@ CustomPDE<dim, degree, number>::set_initial_condition(
   
   if (index == 0)
     {
-      double x = domain_size[0]*0.5 - point[0];
-      scalar_value = 0.5 * (1.0 + sin(pi * max(-0.5, min(0.5, std::sqrt(2.0) * x /l_int))));
-      scalar_value = max(scalar_value, number(1e-5));
-      scalar_value = min(scalar_value, number(1.0-1e-5));
+      double y = point[1];
+      double x = point[0];
+      double ys = (0.5 * (domain_size[1]*0.75 - y
+       + std::sin(2.0*3.14*(2.845 * x + 1.0)/domain_size[0]) * 2.0 
+       + std::sin(2.0*3.14*(7.123 * x      )/domain_size[0]) * 1.0));
+      double flat = 0.5 * (1.0 + sin(pi * max(-0.5, min(0.5, std::sqrt(2.0) * ys /l_int))));
+      unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+ /*     // Declaring distribution (Type std::uniform_real_distribution<double>)
+      std::uniform_real_distribution<double> dist(
+        std::uniform_real_distribution<double>(0.0, 1.0));
+
+      // Declaring random number generator (Type std::mt19937_64)
+      auto rng = std::mt19937_64(seed);
+      flat = flat + 2.0 * 0.001 * (dist(rng) - 0.5); */
+
+      scalar_value = max(min(flat,1.0-1e-4),1e-4);
     }
   else if (index == 1)
     {

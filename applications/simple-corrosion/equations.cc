@@ -14,7 +14,7 @@ PRISMS_PF_BEGIN_NAMESPACE
 void
 CustomAttributeLoader::load_variable_attributes()
 {
-  std::string dependency_string = "n, x1, x2, rxn, rxn_mu, diff1, diff2, grad(n), grad(x1), grad(x2)";
+  std::string dependency_string = "n, x1, x2, rxn, rxn_mu, grad(n), grad(x1), grad(x2)";
   set_variable_name(0, "n");
   set_variable_type(0, FieldInfo::TensorRank::Scalar);
   set_variable_equation_type(0, ExplicitTimeDependent);
@@ -25,12 +25,14 @@ CustomAttributeLoader::load_variable_attributes()
   set_variable_type(1, FieldInfo::TensorRank::Scalar);
   set_variable_equation_type(1, ExplicitTimeDependent);
   set_dependencies_value_term_rhs(1, dependency_string);
+  set_dependencies_gradient_term_rhs(1, dependency_string);
   set_solve_block(1, 2);
 
   set_variable_name(2, "x2");
   set_variable_type(2, FieldInfo::TensorRank::Scalar);
   set_variable_equation_type(2, ExplicitTimeDependent);
   set_dependencies_value_term_rhs(2, dependency_string);
+  set_dependencies_gradient_term_rhs(2, dependency_string);
   set_solve_block(2, 2);
 
   set_variable_name(3, "rxn");
@@ -39,26 +41,12 @@ CustomAttributeLoader::load_variable_attributes()
   set_dependencies_value_term_rhs(3, dependency_string);
   set_solve_block(3, 1);
 
-  set_variable_name(4, "diff1");
+  set_variable_name(4, "rxn_mu");
   set_variable_type(4, FieldInfo::TensorRank::Scalar);
   set_variable_equation_type(4, Auxiliary);
   set_dependencies_value_term_rhs(4, dependency_string);
   set_dependencies_gradient_term_rhs(4, dependency_string);
   set_solve_block(4, 0);
-
-  set_variable_name(5, "diff2");
-  set_variable_type(5, FieldInfo::TensorRank::Scalar);
-  set_variable_equation_type(5, Auxiliary);
-  set_dependencies_value_term_rhs(5, dependency_string);
-  set_dependencies_gradient_term_rhs(5, dependency_string);
-  set_solve_block(5, 0);
-
-  set_variable_name(6, "rxn_mu");
-  set_variable_type(6, FieldInfo::TensorRank::Scalar);
-  set_variable_equation_type(6, Auxiliary);
-  set_dependencies_value_term_rhs(6, dependency_string);
-  set_dependencies_gradient_term_rhs(6, dependency_string);
-  set_solve_block(6, 0);
 }
 
 template <unsigned int dim, unsigned int degree, typename number>
@@ -73,15 +61,18 @@ CustomPDE<dim, degree, number>::compute_explicit_rhs(
     {
       number dt = get_timestep();
       ScalarValue n  = variable_list.template get_value<ScalarValue>(0);
+      ScalarGrad  n_grad = variable_list.template get_gradient<ScalarGrad>(0);
       ScalarValue x1  = variable_list.template get_value<ScalarValue>(1);
+      ScalarGrad  x1_grad = variable_list.template get_gradient<ScalarGrad>(1);
       ScalarValue x2  = variable_list.template get_value<ScalarValue>(2);
+      ScalarGrad  x2_grad = variable_list.template get_gradient<ScalarGrad>(2);
       ScalarValue rxn  = variable_list.template get_value<ScalarValue>(3);
-      ScalarValue diff1  = variable_list.template get_value<ScalarValue>(4);
-      ScalarValue diff2  = variable_list.template get_value<ScalarValue>(5);
-      ScalarValue rxn_mu  = variable_list.template get_value<ScalarValue>(6);
+
       variable_list.set_value_term(0, n + dt * rxn);
-      variable_list.set_value_term(1, x1 + dt * (diff1 + rxn));
-      variable_list.set_value_term(2, x2 + dt * (diff2 - rxn));
+      variable_list.set_value_term(1, x1 + dt * (D1 * x1_grad * n_grad/(n + epsilon_denom) + rxn));
+      variable_list.set_gradient_term(1, dt * (-D1 * x1_grad));
+      variable_list.set_value_term(2, x2 + dt * (-D2 * x2_grad * n_grad/(1.0 - n + epsilon_denom) - rxn));
+      variable_list.set_gradient_term(2, dt * (-D2 * x2_grad));
     }
 }
 
@@ -96,8 +87,8 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
 {
   using std::max;
   using std::min;
-  const ScalarValue upper(1.0 - 1e-5);
-  const ScalarValue lower(1e-5);
+  const number upper(1.0 - 1e-4);
+  const number lower(1e-4);
   if(solve_block == 0)
     {
       ScalarValue n  = variable_list.template get_value<ScalarValue>(0);
@@ -109,14 +100,8 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
 
       // rxn_mu
       ScalarValue rxn_mu_val = std::log(x1) - std::log(x2) + deltaG + dw_coeff * (1.0 - 2.0 * n);
-      variable_list.set_value_term(6, rxn_mu_val);
-      variable_list.set_gradient_term(6, n_grad * grad_coeff);
-      // diff1
-      variable_list.set_value_term(4, D1 * x1_grad * n_grad/(n + epsilon_denom));
-      variable_list.set_gradient_term(4, -D1 * x1_grad);
-      // diff2
-      variable_list.set_value_term(5, -D2 * x2_grad * n_grad/(1.0 - n + epsilon_denom));
-      variable_list.set_gradient_term(5, -D2 * x2_grad);
+      variable_list.set_value_term(4, rxn_mu_val);
+      variable_list.set_gradient_term(4, n_grad * grad_coeff);
     }
   else if(solve_block == 1) // rxn
     {
@@ -125,14 +110,11 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
       ScalarGrad  n_grad = variable_list.template get_gradient<ScalarGrad>(0);
       ScalarValue x1  = variable_list.template get_value<ScalarValue>(1);
       ScalarValue x2  = variable_list.template get_value<ScalarValue>(2);
-      ScalarValue diff1  = variable_list.template get_value<ScalarValue>(4);
-      ScalarValue diff2  = variable_list.template get_value<ScalarValue>(5);
-      ScalarValue rxn_mu  = variable_list.template get_value<ScalarValue>(6);
+      ScalarValue rxn_mu  = variable_list.template get_value<ScalarValue>(4);
       ScalarValue rxn_val = - n_grad.norm_square() * rxn_mu;
       ScalarValue remainder_upper;
       ScalarValue remainder_lower;
       ScalarValue test;
-      ScalarValue rxn_test;
       // find the excess reaction that would put n, x1, and x2 out of bounds and
       // solve for the remaining reaction that would be allowed within the bounds
       // constraining for n
@@ -143,7 +125,7 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
       // for constrained cases, new = test - remainder, otherwise new = test
       rxn_val = (rxn_val * dt - remainder_upper - remainder_lower) / dt;
       // constraining for x1
-      test = x1 + dt * (diff1 + rxn_val);
+ /*     test = x1 + dt * (diff1 + rxn_val);
       remainder_upper = max(test - upper, ScalarValue(0.0));
       remainder_lower = min(test - lower, ScalarValue(0.0));
       // new = x1 + dt*(diff1 + rxn) => rxn = (new - x1 - dt*diff1)/dt
@@ -158,14 +140,14 @@ CustomPDE<dim, degree, number>::compute_nonexplicit_rhs(
       // new = x2 + dt*(diff2 - rxn) => rxn = -(new - x2 - dt*diff2)/dt
       rxn_test = -(-rxn_val * dt - remainder_upper - remainder_lower) / dt;
       rxn_val = max(min(rxn_val,ScalarValue(0.0)),min(rxn_test,ScalarValue(0.0)))
-              + min(max(rxn_val,ScalarValue(0.0)),max(rxn_test,ScalarValue(0.0)));
+              + min(max(rxn_val,ScalarValue(0.0)),max(rxn_test,ScalarValue(0.0))); */
 
-
-/* readable but not efficient version of constraint logic */
-/*      for (unsigned int i = 0; i < rxn_val.size(); ++i)
+/* readable but possibly not efficient version of constraint logic */
+/*      ScalarValue n_test = n + rxn_val * dt;
+      for (unsigned int i = 0; i < rxn_val.size(); ++i)
         {
-          if (phi_test[i] > upper) rxn_val[i] = (upper-n[i])/dt;
-          else if (phi_test[i] < lower) rxn_val[i] = (lower-n[i])/dt;
+          if (n_test[i] > upper) rxn_val[i] = (upper-n[i])/dt;
+          else if (n_test[i] < lower) rxn_val[i] = (lower-n[i])/dt;
         }
       ScalarValue x1_test = x1 + dt * (diff1 + rxn_val);
       for (unsigned int i = 0; i < rxn_val.size(); ++i)
