@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['gmgsolver_0',['GMGSolver',['../classGMGSolver.html',1,'']]],
-  ['gridrefinementcontext_1',['GridRefinementContext',['../classGridRefinementContext.html',1,'']]],
-  ['gridrefiner_2',['GridRefiner',['../classGridRefiner.html',1,'']]]
+  ['fieldinfo_0',['FieldInfo',['../structFieldInfo.html',1,'']]],
+  ['fieldoutputparameterloader_1',['FieldOutputParameterLoader',['../classFieldOutputParameterLoader.html',1,'']]],
+  ['fieldoutputparameters_2',['FieldOutputParameters',['../structFieldOutputParameters.html',1,'']]]
 ];

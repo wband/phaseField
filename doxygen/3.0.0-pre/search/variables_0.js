@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['dependencies_5fgradient_5flhs_0',['dependencies_gradient_lhs',['../structRawDependencies.html#a4ce86927500144c8c1d81816ab2eacb8',1,'RawDependencies']]],
-  ['dependencies_5fgradient_5frhs_1',['dependencies_gradient_rhs',['../structRawDependencies.html#a79a682fb51306f3706e55685e3671f12',1,'RawDependencies']]],
-  ['dependencies_5flhs_2',['dependencies_lhs',['../structRawDependencies.html#a08e32bcc32822e5877069cdbb6355777',1,'RawDependencies']]],
-  ['dependencies_5frhs_3',['dependencies_rhs',['../structRawDependencies.html#a88470811530b46460274a3117965bbbf',1,'RawDependencies']]],
-  ['dependencies_5fvalue_5flhs_4',['dependencies_value_lhs',['../structRawDependencies.html#a05c5904cae0da573a2440ce70571d2fe',1,'RawDependencies']]],
-  ['dependencies_5fvalue_5frhs_5',['dependencies_value_rhs',['../structRawDependencies.html#a8e5cb6501fc6b19d21387f32b69e1d0b',1,'RawDependencies']]]
+  ['active_0',['active',['../structPRISMS__PF__BEGIN__NAMESPACE_1_1TimerStack.html#a97747e29d4cd8de575f95e91f7ac7058',1,'PRISMS_PF_BEGIN_NAMESPACE::TimerStack']]],
+  ['additional_5fdata_1',['additional_data',['../classMatrixFreeHandler.html#a982b27b5475e431c51f14843ad96747b',1,'MatrixFreeHandler']]],
+  ['argc_2',['argc',['../classParseCMDOptions.html#abf92da04daffe8af607348588d8d3a56',1,'ParseCMDOptions']]],
+  ['attributes_5flist_3',['attributes_list',['../classMatrixFreeOperator.html#a0f48aa08433ad4de6796af6a6e7e45ad',1,'MatrixFreeOperator::attributes_list'],['../classSolutionHandler.html#ae081884ce77eaef2db7ca2e2e19f8e25',1,'SolutionHandler::attributes_list']]]
 ];

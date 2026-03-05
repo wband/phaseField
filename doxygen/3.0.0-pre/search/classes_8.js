@@ -1,11 +1,10 @@
 var searchData=
 [
-  ['namedtype_0',['NamedType',['../classNamedType.html',1,'']]],
-  ['nonlinearsolveparameterset_1',['NonlinearSolveParameterSet',['../structNonlinearSolveParameterSet.html',1,'']]],
-  ['nonlinearsolverparameters_2',['NonlinearSolverParameters',['../structNonlinearSolverParameters.html',1,'']]],
-  ['nonuniformdirichlet_3',['NonuniformDirichlet',['../classNonuniformDirichlet.html',1,'']]],
-  ['nucleationhandler_4',['NucleationHandler',['../classNucleationHandler.html',1,'']]],
-  ['nucleationparameters_5',['NucleationParameters',['../structNucleationParameters.html',1,'']]],
-  ['nucleus_6',['Nucleus',['../structNucleus.html',1,'']]],
-  ['nucleusrefinementfunction_7',['NucleusRefinementFunction',['../classNucleusRefinementFunction.html',1,'']]]
+  ['matrixfreecontainer_0',['MatrixFreeContainer',['../classMatrixFreeContainer.html',1,'']]],
+  ['matrixfreehandler_1',['MatrixFreeHandler',['../classMatrixFreeHandler.html',1,'']]],
+  ['matrixfreeoperator_2',['MatrixFreeOperator',['../classMatrixFreeOperator.html',1,'']]],
+  ['mesh_3',['Mesh',['../classMesh.html',1,'']]],
+  ['meta_4',['Meta',['../structPRISMS__PF__BEGIN__NAMESPACE_1_1TimerStack_1_1Meta.html',1,'PRISMS_PF_BEGIN_NAMESPACE::TimerStack']]],
+  ['mginfo_5',['MGInfo',['../classMGInfo.html',1,'']]],
+  ['miscellaneousparameters_6',['MiscellaneousParameters',['../structMiscellaneousParameters.html',1,'']]]
 ];
