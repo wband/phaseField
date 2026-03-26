@@ -129,7 +129,7 @@ private:
     const dealii::VectorizedArray<number>                     &element_volume,
     Types::Index solve_block) const override;
 
-  number D1 = 0.02;
+  number D1 = 1.0;
   number D2 = 1.0;
   number deltaG = 1.0;
   number alpha = 0.5;

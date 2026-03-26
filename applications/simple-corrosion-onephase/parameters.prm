@@ -22,13 +22,13 @@ end
 set time step = 5e-4
 
 # The total number of timesteps to take
-set number steps = 100000000
+set number steps = 10000000
 
 # The number of outputs and the frequency at which they output. The potential options
 # for the type of output are: EQUAL_SPACING, LOG_SPACING, and N_PER_DECADE.
 subsection output
   set condition = LOG_SPACING
-  set number = 200
+  set number = 100
 end
 
 # The boundary conditions for the variables. The available boundary conditions are
