@@ -1,0 +1,24 @@
+set mesh type = rectangular
+
+subsection Rectangular mesh
+  set x size = 1.0
+  set y size = 1.0
+  set z size = 1.0
+end
+
+set global refinement = 6
+set max refinement                    = 6
+set min refinement                    = 6
+set mesh adaptivity                   = false
+
+
+set time step = 1.0
+set number steps = 10
+
+subsection output
+  set condition = EQUAL_SPACING
+  set number = 10
+end
+
+set Model constant m_well = 1.0, DOUBLE
+set Model constant kappa = 2.0, DOUBLE
