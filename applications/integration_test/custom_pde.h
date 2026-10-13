@@ -45,15 +45,13 @@ private:
               n_test1_field * solve_context.get_invm_manager().get_jxw(TensorRank::Scalar);
             
             const auto &argument_field =
-              solve_context.get_solution_indexer().get_solution_vector(3);
-            const auto &psi_mag_grad =
               solve_context.get_solution_indexer().get_solution_vector(2);
             dealii::LinearAlgebra::distributed::Vector<number> n_test2_field;
             n_test2_field.reinit(argument_field);
             for (unsigned int i = 0; i < n_test2_field.locally_owned_size(); ++i)
               {
                 n_test2_field.local_element(i) =
-                    std::sinh(argument_field.local_element(i)) * psi_mag_grad.local_element(i);
+                    std::sinh(argument_field.local_element(i));
               }
             number n_test2 = n_test2_field * solve_context.get_invm_manager().get_jxw(TensorRank::Scalar);
             Logger::instance() << LogFormatter::info("Test1 value: ") << std::setprecision(12) << n_test1 << "\n";
@@ -75,13 +73,11 @@ private:
       get_user_inputs().spatial_discretization.rectangular_mesh.size;
     if (index == 0)
       {
-      scalar_value = 1.0  +  1.0 * std::sin(point[0] * 3.14159 * 2.0);
+        scalar_value = 1.0  +  std::sin(point[0] * 3.14159 * 2.0);
       }
-    if (index == 4)
+    if (index == 3)
       {
-        number r = std::sqrt((point[0] - 0.5 * mesh_size[0]) * (point[0] - 0.5 * mesh_size[0]) +
-                      (point[1] - 0.5 * mesh_size[1]) * (point[1] - 0.5 * mesh_size[1]));
-        scalar_value = 0.5 * (1.0 - std::tanh((r - 0.25 * mesh_size[0]) / (0.05 * mesh_size[0])));
+        scalar_value = std::sinh(std::abs(std::cos(point[0] * 3.14159 * 2.0)) * 3.14159 * 2.0);
       }
   }
 
@@ -99,14 +95,15 @@ private:
       {
         ScalarValue n_val  = variable_list.template get_value<Scalar, Current>(0);
         ScalarGrad n_grad  = variable_list.template get_gradient<Scalar, Current>(0);
-        ScalarGrad  psi_grad = variable_list.template get_gradient<Scalar, Current>(4);
-       // ScalarValue n_test1_val = n_val * n_val;
-        ScalarValue argument = n_val + n_grad[0] * 2.0 + n_grad[1];
+        ScalarValue argument = n_grad.norm();
         ScalarValue n_test1_val = std::sinh(argument);
-        ScalarValue psi_mag_grad = psi_grad.norm();
-        variable_list.set_value_term(1, n_test1_val * psi_mag_grad);
-        variable_list.set_value_term(2, psi_mag_grad);
-        variable_list.set_value_term(3, argument);
+        variable_list.set_value_term(1, n_test1_val);
+        variable_list.set_value_term(2, argument);
+      }
+    else if (solve_block_id == 3)
+      {
+        ScalarValue argument = variable_list.template get_value<Scalar, Current>(2);
+        variable_list.set_value_term(4, std::sinh(argument));
       }
   }
 

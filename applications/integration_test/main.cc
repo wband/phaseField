@@ -24,15 +24,15 @@ main(int argc, char *argv[])
   std::vector<FieldAttributes> field_attributes = {
     FieldAttributes("n", Scalar),
     FieldAttributes("n_test1", Scalar),
-    FieldAttributes("psi_mag_grad", Scalar),
     FieldAttributes("argument", Scalar),
-    FieldAttributes("psi", Scalar)
+    FieldAttributes("analytical", Scalar),
+    FieldAttributes("n_test2", Scalar)
   };
 
   SolveBlock const_block;
   const_block.id            = -1;
   const_block.solve_type    = Constant;
-  const_block.field_indices = {4};
+  const_block.field_indices = {3};
 
   SolveBlock exp_block;
   exp_block.id            = 1;
@@ -46,12 +46,20 @@ main(int argc, char *argv[])
   test_block.id            = 2;
   test_block.solve_type    = Explicit;
   test_block.solve_timing  = Uninitialized;
-  test_block.field_indices = {1, 2, 3};
+  test_block.field_indices = {1, 2};
   test_block.dependencies_rhs =
-    make_dependency_set(field_attributes, {"n", "grad(n)", "grad(psi)"});
+    make_dependency_set(field_attributes, {"n", "grad(n)"});
+
+  SolveBlock test_block2;
+  test_block2.id            = 3;
+  test_block2.solve_type    = Explicit;
+  test_block2.solve_timing  = Uninitialized;
+  test_block2.field_indices = {4};
+  test_block2.dependencies_rhs =
+    make_dependency_set(field_attributes, {"argument"});
 
 
-  std::vector<SolveBlock> solve_blocks({const_block, exp_block, test_block});
+  std::vector<SolveBlock> solve_blocks({const_block, exp_block, test_block, test_block2});
 
   UserInputParameters<dim>       user_inputs(cli_options.get_parameters_filename());
   PhaseFieldTools<dim>           pf_tools;
